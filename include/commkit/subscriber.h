@@ -4,6 +4,7 @@
 
 #include "topic.h"
 #include "callback.h"
+#include "visibility.h"
 
 namespace commkit
 {
@@ -15,7 +16,7 @@ class SubscriberImpl;
 /*
  * Options to configure a Subscriber.
  */
-struct SubscriptionOpts {
+struct COMMKIT_API SubscriptionOpts {
     bool reliable;
     int timeBasedFilterHere; // todo
     unsigned history;
@@ -32,7 +33,7 @@ struct SubscriptionOpts {
  * a pointer to internally received data, in order to avoid an
  * additional copy step.
  */
-struct Payload {
+struct COMMKIT_API Payload {
     uint8_t *bytes;
     size_t len;
 
@@ -45,7 +46,7 @@ struct Payload {
  * Subscriber subscribes to a topic described by a name and datatype.
  * It reports new
  */
-class Subscriber
+class COMMKIT_API Subscriber
 {
 public:
     ~Subscriber();

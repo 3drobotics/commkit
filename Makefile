@@ -15,6 +15,9 @@ SRCS_CPP := \
 
 INCS += -Iinclude
 
+# ensure public API is exported, see visibility.h
+CPPFLAGS += -DCOMMKIT_DLL -DCOMMKIT_DLL_EXPORTS
+
 LIBCOMMKIT := $(INSTALL)/lib/libcommkit.$(DYLIB_SUFFIX)
 
 LDLIBS += -lfastrtps

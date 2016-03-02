@@ -4,6 +4,7 @@
 
 #include "topic.h"
 #include "callback.h"
+#include "visibility.h"
 
 namespace commkit
 {
@@ -12,7 +13,7 @@ class NodeImpl;
 class Publisher;
 class PublisherImpl;
 
-struct PublicationOpts {
+struct COMMKIT_API PublicationOpts {
     bool reliable;            //
     unsigned maxBlockingTime; // only relevant if reliable is true
     unsigned history; // number of samples to retain, to help late joining nodes to 'catch up'
@@ -23,7 +24,7 @@ struct PublicationOpts {
     }
 };
 
-class Publisher
+class COMMKIT_API Publisher
 {
 public:
     ~Publisher();

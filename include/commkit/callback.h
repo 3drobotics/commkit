@@ -1,5 +1,7 @@
 #pragma once
 
+#include "visibility.h"
+
 #include <functional>
 #include <utility>
 
@@ -52,7 +54,7 @@ namespace commkit
 template <typename RT>
 class Callback;
 template <typename RT, typename... Args>
-class Callback<RT(Args...)>
+class COMMKIT_API Callback<RT(Args...)>
 {
 public:
     Callback() : target(nullptr)

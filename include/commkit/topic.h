@@ -2,10 +2,12 @@
 
 #include <string>
 
+#include "visibility.h"
+
 namespace commkit
 {
 
-struct Topic {
+struct COMMKIT_API Topic {
     std::string name;
     std::string datatype;
 

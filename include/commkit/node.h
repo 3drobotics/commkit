@@ -6,6 +6,7 @@
 
 #include "subscriber.h"
 #include "publisher.h"
+#include "visibility.h"
 
 namespace commkit
 {
@@ -15,7 +16,7 @@ class NodeImpl;
 /*
  * Options to configure a Node.
  */
-struct NodeOpts {
+struct COMMKIT_API NodeOpts {
     std::string name;
     uint32_t domainID;
     std::vector<std::string> unicastLocators;   // where to send runtime data
@@ -29,7 +30,7 @@ struct NodeOpts {
 /*
  * A Node represents a Node.
  */
-class Node
+class COMMKIT_API Node
 {
 public:
     Node();
