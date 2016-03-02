@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "node.h"
+#include <commkit/node.h>
 
 #include <fastrtps/participant/Participant.h>
 

@@ -1,4 +1,4 @@
-#include "subscriber.h"
+#include <commkit/subscriber.h>
 #include "subscriberimpl.h"
 #include "nodeimpl.h"
 

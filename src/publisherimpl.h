@@ -1,6 +1,6 @@
 #pragma once
 
-#include "publisher.h"
+#include <commkit/publisher.h>
 #include "nodeimpl.h"
 #include "bytebuftopic.h"
 

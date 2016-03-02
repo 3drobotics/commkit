@@ -1,9 +1,7 @@
-#include "node.h"
+#include <commkit/node.h>
 #include "nodeimpl.h"
 
 #include <mutex>
-
-using namespace commkit;
 
 namespace commkit
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "subscriber.h"
+#include <commkit/subscriber.h>
 #include "nodeimpl.h"
 #include "bytebuftopic.h"
 

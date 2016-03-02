@@ -1,4 +1,4 @@
-#include "publisher.h"
+#include <commkit/publisher.h>
 #include "publisherimpl.h"
 #include "nodeimpl.h"
 
