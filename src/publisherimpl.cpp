@@ -41,13 +41,17 @@ bool PublisherImpl::init(const Topic &t, const PublicationOpts &opts)
     // ugh, payload size must be defined
     assert(opts.maxPayloadSize > 0);
 
-    // fast-rtps requires datatype to be regsitered before we can
-    // create the publisher.
-
     topicName = t.name;
     topicDataType.setName(t.datatype.c_str());
     topicDataType.setSize(opts.maxPayloadSize);
-    eprosima::fastrtps::Domain::registerType(node->part, &topicDataType);
+
+    // fast-rtps requires datatype to be regsitered before we can
+    // create the publisher.
+
+    eprosima::fastrtps::TopicDataType *tdt;
+    if (!eprosima::fastrtps::Domain::getRegisteredType(node->part, t.datatype.c_str(), &tdt)) {
+        eprosima::fastrtps::Domain::registerType(node->part, &topicDataType);
+    }
 
     frpub = eprosima::fastrtps::Domain::createPublisher(node->part, pa, this);
     return (frpub != nullptr);

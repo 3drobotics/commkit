@@ -9,4 +9,3 @@
 #include <commkit/publisher.h>
 #include <commkit/subscriber.h>
 #include <commkit/topic.h>
-#include <commkit/visibility.h>
