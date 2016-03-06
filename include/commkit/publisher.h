@@ -42,8 +42,6 @@ public:
     Callback<void(const Publisher *)> onSubscriberConnected;
     Callback<void(const Publisher *)> onSubscriberDisconnected;
 
-    Callback<void(int, int, int, int, int)> numbers;
-
 private:
     Publisher(std::shared_ptr<NodeImpl> n);
     bool init(const Topic &t, const PublicationOpts &opts);
