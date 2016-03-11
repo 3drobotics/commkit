@@ -16,8 +16,7 @@ namespace commkit
 class SubscriberImpl : public eprosima::fastrtps::SubscriberListener
 {
 public:
-    SubscriberImpl(const std::string &name, const std::string &datatype,
-                   std::shared_ptr<NodeImpl> n);
+    SubscriberImpl(const Topic &t, std::shared_ptr<NodeImpl> n);
     ~SubscriberImpl();
 
     void setSubscriber(std::shared_ptr<Subscriber> s)

@@ -3,6 +3,7 @@
 #include <string>
 
 #include <commkit/callback.h>
+#include <commkit/topic.h>
 #include <commkit/types.h>
 #include <commkit/visibility.h>
 
@@ -20,9 +21,8 @@ struct COMMKIT_API SubscriptionOpts {
     bool reliable;
     int timeBasedFilterHere; // todo
     unsigned history;
-    unsigned maxPayloadSize; // ugh, this is currently required by fast-rtps. need a workaround.
 
-    SubscriptionOpts() : reliable(false), timeBasedFilterHere(0), history(1), maxPayloadSize(0)
+    SubscriptionOpts() : reliable(false), timeBasedFilterHere(0), history(1)
     {
     }
 };
@@ -66,7 +66,7 @@ public:
     Callback<void(SubscriberPtr)> onMessage;
 
 private:
-    Subscriber(const std::string &name, const std::string &datatype, std::shared_ptr<NodeImpl> n);
+    Subscriber(const Topic &t, std::shared_ptr<NodeImpl> n);
 
     std::unique_ptr<SubscriberImpl> impl;
 

@@ -22,7 +22,7 @@ PublisherImpl::PublisherImpl(const Topic &t, std::shared_ptr<NodeImpl> n)
     topicDataType.setName(t.datatype.c_str());
 
     // ugh, payload size must be defined
-    assert(t.maxPayloadSize > 0);
+    assert(t.maxPayloadSize > 0 && "Topic::maxPayloadSize must be specified");
     topicDataType.setSize(t.maxPayloadSize);
 }
 

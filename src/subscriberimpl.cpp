@@ -9,16 +9,19 @@
 namespace commkit
 {
 
-SubscriberImpl::SubscriberImpl(const std::string &name, const std::string &datatype,
-                               std::shared_ptr<NodeImpl> n)
-    : matchedPubs(0), node(n), topicName(name)
+SubscriberImpl::SubscriberImpl(const Topic &t, std::shared_ptr<NodeImpl> n)
+    : matchedPubs(0), node(n), topicName(t.name)
 {
     /*
      * NB: we require 'sub' to be initialized separately via setSubscriber(),
      * since we expect to be constructed from the Subscriber() ctor, at which point
      * a shared_ptr to the about to be created Subscriber does not yet exist.
      */
-    topicDataType.setName(datatype.c_str());
+    topicDataType.setName(t.datatype.c_str());
+
+    // ugh, payload size must be defined
+    assert(t.maxPayloadSize > 0 && "Topic::maxPayloadSize must be specified");
+    topicDataType.setSize(t.maxPayloadSize);
 }
 
 SubscriberImpl::~SubscriberImpl()
@@ -44,10 +47,6 @@ bool SubscriberImpl::init(const SubscriptionOpts &opts)
     } else {
         sa.qos.m_reliability.kind = eprosima::fastrtps::BEST_EFFORT_RELIABILITY_QOS;
     }
-
-    // ugh, payload size must be defined
-    assert(opts.maxPayloadSize > 0);
-    topicDataType.setSize(opts.maxPayloadSize);
 
     // fast-rtps requires datatype to be regsitered before we can
     // create the publisher.

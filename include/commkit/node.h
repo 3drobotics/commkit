@@ -42,8 +42,7 @@ public:
     bool init(const std::string &name);
     bool init(const NodeOpts &opts);
 
-    std::shared_ptr<Subscriber> createSubscriber(const std::string &name,
-                                                 const std::string &datatype);
+    std::shared_ptr<Subscriber> createSubscriber(const Topic &t);
     std::shared_ptr<Publisher> createPublisher(const Topic &t);
 
 private:

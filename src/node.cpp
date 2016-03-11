@@ -57,15 +57,14 @@ bool Node::init(const NodeOpts &opts)
     return (impl != nullptr);
 }
 
-std::shared_ptr<Subscriber> Node::createSubscriber(const std::string &name,
-                                                   const std::string &datatype)
+std::shared_ptr<Subscriber> Node::createSubscriber(const Topic &t)
 {
     /*
      * Create and return a new subscriber.
      */
 
     // would rather use make_shared but Subscriber ctor is private
-    auto sub = std::shared_ptr<Subscriber>(new Subscriber(name, datatype, impl));
+    auto sub = std::shared_ptr<Subscriber>(new Subscriber(t, impl));
     sub->impl->setSubscriber(sub);
     return sub;
 }
