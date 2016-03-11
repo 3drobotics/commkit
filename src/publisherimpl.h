@@ -14,9 +14,14 @@ namespace commkit
 class PublisherImpl : public eprosima::fastrtps::PublisherListener
 {
 public:
-    PublisherImpl(const std::string &name, const std::string &datatype, std::shared_ptr<NodeImpl> n,
-                  Publisher *p);
+    PublisherImpl(const std::string &name, const std::string &datatype, std::shared_ptr<NodeImpl> n);
     ~PublisherImpl();
+
+    void setPublisher(std::shared_ptr<Publisher> p)
+    {
+        // Only expected to be called via Node during Publisher construction.
+        pub = p;
+    }
 
     bool init(const PublicationOpts &opts);
 
@@ -54,7 +59,7 @@ private:
     ByteBufTopicData topicData;
     ByteBufTopicDataType topicDataType;
 
-    Publisher *pub;
+    std::weak_ptr<Publisher> pub;
 };
 
 } // namespace commkit

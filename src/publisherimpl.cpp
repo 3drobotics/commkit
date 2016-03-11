@@ -12,9 +12,14 @@ namespace commkit
 {
 
 PublisherImpl::PublisherImpl(const std::string &name, const std::string &datatype,
-                             std::shared_ptr<NodeImpl> n, Publisher *p)
-    : matchedSubs(0), reserved(false), node(n), topicName(name), pub(p)
+                             std::shared_ptr<NodeImpl> n)
+    : matchedSubs(0), reserved(false), node(n), topicName(name)
 {
+    /*
+     * NB: we require 'pub' to be initialized separately via setPublisher(),
+     * since we expect to be constructed from the Publisher() ctor, at which point
+     * a shared_ptr to the about to be created Publisher does not yet exist.
+     */
     topicDataType.setName(datatype.c_str());
 }
 
@@ -137,12 +142,16 @@ void PublisherImpl::onPublicationMatched(eprosima::fastrtps::Publisher *,
     switch (info.status) {
     case MATCHED_MATCHING:
         matchedSubs++;
-        pub->onSubscriberConnected(pub);
+        if (auto sharedPub = pub.lock()) {
+            sharedPub->onSubscriberConnected(sharedPub);
+        }
         break;
 
     case REMOVED_MATCHING:
         matchedSubs--;
-        pub->onSubscriberDisconnected(pub);
+        if (auto sharedPub = pub.lock()) {
+            sharedPub->onSubscriberDisconnected(sharedPub);
+        }
     }
 }
 

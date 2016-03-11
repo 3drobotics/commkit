@@ -1,5 +1,6 @@
 #include <commkit/node.h>
 #include "nodeimpl.h"
+#include "publisherimpl.h"
 
 #include <map>
 #include <mutex>
@@ -74,7 +75,9 @@ std::shared_ptr<Publisher> Node::createPublisher(const std::string &name,
      */
 
     // would rather use make_shared but Publisher ctor is private
-    return std::shared_ptr<Publisher>(new Publisher(name, datatype, impl));
+    auto pub = std::shared_ptr<Publisher>(new Publisher(name, datatype, impl));
+    pub->impl->setPublisher(pub);
+    return pub;
 }
 
 } // namespace commkit

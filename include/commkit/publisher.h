@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
 #include <string>
 
-#include "callback.h"
-#include "visibility.h"
+#include <commkit/callback.h>
+#include <commkit/types.h>
+#include <commkit/visibility.h>
 
 namespace commkit
 {
@@ -41,8 +41,8 @@ public:
     bool publish(const uint8_t *b, size_t len);
     unsigned matchedSubscribers() const;
 
-    Callback<void(const Publisher *)> onSubscriberConnected;
-    Callback<void(const Publisher *)> onSubscriberDisconnected;
+    Callback<void(const PublisherPtr)> onSubscriberConnected;
+    Callback<void(const PublisherPtr)> onSubscriberDisconnected;
 
 private:
     Publisher(const std::string &name, const std::string &datatype, std::shared_ptr<NodeImpl> n);
