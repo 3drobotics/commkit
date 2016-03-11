@@ -14,8 +14,7 @@ namespace commkit
 class PublisherImpl : public eprosima::fastrtps::PublisherListener
 {
 public:
-    PublisherImpl(const std::string &name, const std::string &datatype,
-                  std::shared_ptr<NodeImpl> n);
+    PublisherImpl(const Topic &t, std::shared_ptr<NodeImpl> n);
     ~PublisherImpl();
 
     void setPublisher(std::shared_ptr<Publisher> p)

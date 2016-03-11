@@ -70,15 +70,14 @@ std::shared_ptr<Subscriber> Node::createSubscriber(const std::string &name,
     return sub;
 }
 
-std::shared_ptr<Publisher> Node::createPublisher(const std::string &name,
-                                                 const std::string &datatype)
+std::shared_ptr<Publisher> Node::createPublisher(const Topic &t)
 {
     /*
      * Create and return a new publisher.
      */
 
     // would rather use make_shared but Publisher ctor is private
-    auto pub = std::shared_ptr<Publisher>(new Publisher(name, datatype, impl));
+    auto pub = std::shared_ptr<Publisher>(new Publisher(t, impl));
     pub->impl->setPublisher(pub);
     return pub;
 }

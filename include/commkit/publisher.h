@@ -3,6 +3,7 @@
 #include <string>
 
 #include <commkit/callback.h>
+#include <commkit/topic.h>
 #include <commkit/types.h>
 #include <commkit/visibility.h>
 
@@ -17,9 +18,8 @@ struct COMMKIT_API PublicationOpts {
     bool reliable;            //
     unsigned maxBlockingTime; // only relevant if reliable is true
     unsigned history; // number of samples to retain, to help late joining nodes to 'catch up'
-    unsigned maxPayloadSize; // ugh, this is currently required by fast-rtps. need a workaround.
 
-    PublicationOpts() : reliable(true), maxBlockingTime(500), history(1), maxPayloadSize(0)
+    PublicationOpts() : reliable(true), maxBlockingTime(500), history(1)
     {
     }
 };
@@ -45,7 +45,7 @@ public:
     Callback<void(const PublisherPtr)> onSubscriberDisconnected;
 
 private:
-    Publisher(const std::string &name, const std::string &datatype, std::shared_ptr<NodeImpl> n);
+    Publisher(const Topic &t, std::shared_ptr<NodeImpl> n);
 
     std::unique_ptr<PublisherImpl> impl;
 

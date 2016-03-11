@@ -11,16 +11,19 @@
 namespace commkit
 {
 
-PublisherImpl::PublisherImpl(const std::string &name, const std::string &datatype,
-                             std::shared_ptr<NodeImpl> n)
-    : matchedSubs(0), reserved(false), node(n), topicName(name)
+PublisherImpl::PublisherImpl(const Topic &t, std::shared_ptr<NodeImpl> n)
+    : matchedSubs(0), reserved(false), node(n), topicName(t.name)
 {
     /*
      * NB: we require 'pub' to be initialized separately via setPublisher(),
      * since we expect to be constructed from the Publisher() ctor, at which point
      * a shared_ptr to the about to be created Publisher does not yet exist.
      */
-    topicDataType.setName(datatype.c_str());
+    topicDataType.setName(t.datatype.c_str());
+
+    // ugh, payload size must be defined
+    assert(t.maxPayloadSize > 0);
+    topicDataType.setSize(t.maxPayloadSize);
 }
 
 PublisherImpl::~PublisherImpl()
@@ -44,10 +47,6 @@ bool PublisherImpl::init(const PublicationOpts &opts)
     } else {
         pa.qos.m_reliability.kind = eprosima::fastrtps::BEST_EFFORT_RELIABILITY_QOS;
     }
-
-    // ugh, payload size must be defined
-    assert(opts.maxPayloadSize > 0);
-    topicDataType.setSize(opts.maxPayloadSize);
 
     // fast-rtps requires datatype to be regsitered before we can
     // create the publisher.

@@ -4,9 +4,10 @@
 #include <vector>
 #include <memory>
 
-#include "subscriber.h"
-#include "publisher.h"
-#include "visibility.h"
+#include <commkit/topic.h>
+#include <commkit/subscriber.h>
+#include <commkit/publisher.h>
+#include <commkit/visibility.h>
 
 namespace commkit
 {
@@ -43,8 +44,7 @@ public:
 
     std::shared_ptr<Subscriber> createSubscriber(const std::string &name,
                                                  const std::string &datatype);
-    std::shared_ptr<Publisher> createPublisher(const std::string &name,
-                                               const std::string &datatype);
+    std::shared_ptr<Publisher> createPublisher(const Topic &t);
 
 private:
     static std::shared_ptr<NodeImpl> getImpl(const NodeOpts &opts);
