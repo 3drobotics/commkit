@@ -63,7 +63,7 @@ public:
 
     Callback<void(const Subscriber *)> onPublisherConnected;
     Callback<void(const Subscriber *)> onPublisherDisconnected;
-    Callback<void(Subscriber *)> onData;
+    Callback<void(Subscriber *)> onMessage;
 
 private:
     Subscriber(const std::string &name, const std::string &datatype, std::shared_ptr<NodeImpl> n);

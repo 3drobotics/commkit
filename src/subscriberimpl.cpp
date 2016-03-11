@@ -113,7 +113,7 @@ void SubscriberImpl::onNewDataMessage(eprosima::fastrtps::Subscriber *)
      * They can then either peek() or take() as appropriate.
      */
 
-    sub->onData(sub);
+    sub->onMessage(sub);
 }
 
 } // namespace commkit
