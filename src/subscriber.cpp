@@ -5,7 +5,9 @@
 namespace commkit
 {
 
-Subscriber::Subscriber(std::shared_ptr<NodeImpl> n) : impl(new SubscriberImpl(n, this))
+Subscriber::Subscriber(const std::string &name, const std::string &datatype,
+                       std::shared_ptr<NodeImpl> n)
+    : impl(new SubscriberImpl(name, datatype, n, this))
 {
 }
 
@@ -13,9 +15,9 @@ Subscriber::~Subscriber()
 {
 }
 
-bool Subscriber::init(const Topic &t, const SubscriptionOpts &opts)
+bool Subscriber::init(const SubscriptionOpts &opts)
 {
-    return impl->init(t, opts);
+    return impl->init(opts);
 }
 
 bool Subscriber::peek(Payload *p)

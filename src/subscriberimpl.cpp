@@ -9,6 +9,13 @@
 namespace commkit
 {
 
+SubscriberImpl::SubscriberImpl(const std::string &name, const std::string &datatype,
+                               std::shared_ptr<NodeImpl> n, Subscriber *s)
+    : matchedPubs(0), node(n), topicName(name), sub(s)
+{
+    topicDataType.setName(datatype.c_str());
+}
+
 SubscriberImpl::~SubscriberImpl()
 {
     if (frsub != nullptr) {
@@ -16,7 +23,7 @@ SubscriberImpl::~SubscriberImpl()
     }
 }
 
-bool SubscriberImpl::init(const Topic &t, const SubscriptionOpts &opts)
+bool SubscriberImpl::init(const SubscriptionOpts &opts)
 {
     /*
      * Create subscription from the given opts.
@@ -24,8 +31,8 @@ bool SubscriberImpl::init(const Topic &t, const SubscriptionOpts &opts)
 
     eprosima::fastrtps::SubscriberAttributes sa;
     sa.topic.topicKind = NO_KEY;
-    sa.topic.topicName = t.name;
-    sa.topic.topicDataType = t.datatype;
+    sa.topic.topicName = name();
+    sa.topic.topicDataType = datatype();
 
     if (opts.reliable) {
         sa.qos.m_reliability.kind = eprosima::fastrtps::RELIABLE_RELIABILITY_QOS;
@@ -35,16 +42,13 @@ bool SubscriberImpl::init(const Topic &t, const SubscriptionOpts &opts)
 
     // ugh, payload size must be defined
     assert(opts.maxPayloadSize > 0);
-
-    topicName = t.name;
-    topicDataType.setName(t.datatype.c_str());
     topicDataType.setSize(opts.maxPayloadSize);
 
     // fast-rtps requires datatype to be regsitered before we can
     // create the publisher.
 
     eprosima::fastrtps::TopicDataType *tdt;
-    if (!eprosima::fastrtps::Domain::getRegisteredType(node->part, t.datatype.c_str(), &tdt)) {
+    if (!eprosima::fastrtps::Domain::getRegisteredType(node->part, datatype().c_str(), &tdt)) {
         eprosima::fastrtps::Domain::registerType(node->part, &topicDataType);
     }
 

@@ -29,6 +29,8 @@ class COMMKIT_API Publisher
 public:
     ~Publisher();
 
+    bool init(const PublicationOpts &opts);
+
     // XXX: make this const once TopicDataType.getName() is const
     std::string datatype();
     std::string name() const;
@@ -43,8 +45,7 @@ public:
     Callback<void(const Publisher *)> onSubscriberDisconnected;
 
 private:
-    Publisher(std::shared_ptr<NodeImpl> n);
-    bool init(const Topic &t, const PublicationOpts &opts);
+    Publisher(const std::string &name, const std::string &datatype, std::shared_ptr<NodeImpl> n);
 
     std::unique_ptr<PublisherImpl> impl;
 

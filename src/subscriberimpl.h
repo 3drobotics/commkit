@@ -16,12 +16,11 @@ namespace commkit
 class SubscriberImpl : public eprosima::fastrtps::SubscriberListener
 {
 public:
-    SubscriberImpl(std::shared_ptr<NodeImpl> n, Subscriber *s) : matchedPubs(0), node(n), sub(s)
-    {
-    }
+    SubscriberImpl(const std::string &name, const std::string &datatype,
+                   std::shared_ptr<NodeImpl> n, Subscriber *s);
     ~SubscriberImpl();
 
-    bool init(const Topic &t, const SubscriptionOpts &opts);
+    bool init(const SubscriptionOpts &opts);
 
     bool peek(Payload *p);
     int take(Payload *p);

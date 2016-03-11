@@ -5,7 +5,9 @@
 namespace commkit
 {
 
-Publisher::Publisher(std::shared_ptr<NodeImpl> n) : impl(new PublisherImpl(n, this))
+Publisher::Publisher(const std::string &name, const std::string &datatype,
+                     std::shared_ptr<NodeImpl> n)
+    : impl(new PublisherImpl(name, datatype, n, this))
 {
 }
 
@@ -13,9 +15,9 @@ Publisher::~Publisher()
 {
 }
 
-bool Publisher::init(const Topic &t, const PublicationOpts &opts)
+bool Publisher::init(const PublicationOpts &opts)
 {
-    return impl->init(t, opts);
+    return impl->init(opts);
 }
 
 std::string Publisher::datatype()

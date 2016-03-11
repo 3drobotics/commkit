@@ -51,6 +51,8 @@ class COMMKIT_API Subscriber
 public:
     ~Subscriber();
 
+    bool init(const SubscriptionOpts &opts);
+
     bool peek(Payload *p);
     int take(Payload *p);
     unsigned matchedPublishers() const;
@@ -64,8 +66,7 @@ public:
     Callback<void(Subscriber *)> onData;
 
 private:
-    Subscriber(std::shared_ptr<NodeImpl> n);
-    bool init(const Topic &t, const SubscriptionOpts &opts);
+    Subscriber(const std::string &name, const std::string &datatype, std::shared_ptr<NodeImpl> n);
 
     std::unique_ptr<SubscriberImpl> impl;
 

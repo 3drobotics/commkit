@@ -55,34 +55,26 @@ bool Node::init(const NodeOpts &opts)
     return (impl != nullptr);
 }
 
-std::shared_ptr<Subscriber> Node::subscribe(const Topic &t, const SubscriptionOpts &opts)
+std::shared_ptr<Subscriber> Node::createSubscriber(const std::string &name,
+                                                   const std::string &datatype)
 {
     /*
      * Create and return a new subscriber.
      */
 
     // would rather use make_shared but Subscriber ctor is private
-    std::shared_ptr<Subscriber> s(new Subscriber(impl));
-    if (!s->init(t, opts)) {
-        cout << "failed to create subscriber :(" << endl;
-        return nullptr; // XXX be helpful
-    }
-    return s;
+    return std::shared_ptr<Subscriber>(new Subscriber(name, datatype, impl));
 }
 
-std::shared_ptr<Publisher> Node::publish(const Topic &t, const PublicationOpts &opts)
+std::shared_ptr<Publisher> Node::createPublisher(const std::string &name,
+                                                 const std::string &datatype)
 {
     /*
      * Create and return a new publisher.
      */
 
     // would rather use make_shared but Publisher ctor is private
-    std::shared_ptr<Publisher> p(new Publisher(impl));
-    if (!p->init(t, opts)) {
-        cout << "failed to create publisher :(" << endl;
-        return nullptr; // XXX be helpful
-    }
-    return p;
+    return std::shared_ptr<Publisher>(new Publisher(name, datatype, impl));
 }
 
 } // namespace commkit

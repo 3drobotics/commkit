@@ -39,13 +39,15 @@ public:
     bool init(const std::string &name);
     bool init(const NodeOpts &opts);
 
-    std::shared_ptr<Subscriber> subscribe(const Topic &t, const SubscriptionOpts &opts);
-    std::shared_ptr<Publisher> publish(const Topic &t, const PublicationOpts &opts);
+    std::shared_ptr<Subscriber> createSubscriber(const std::string &name,
+                                                 const std::string &datatype);
+    std::shared_ptr<Publisher> createPublisher(const std::string &name,
+                                               const std::string &datatype);
 
 private:
     static std::shared_ptr<NodeImpl> getImpl(const NodeOpts &opts);
 
-    std::shared_ptr<NodeImpl> impl; // all nodes in this process point to the same impl
+    std::shared_ptr<NodeImpl> impl;
 };
 
 } // namespace commkit

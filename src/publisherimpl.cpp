@@ -11,9 +11,11 @@
 namespace commkit
 {
 
-PublisherImpl::PublisherImpl(std::shared_ptr<NodeImpl> n, Publisher *p)
-    : matchedSubs(0), reserved(false), node(n), pub(p)
+PublisherImpl::PublisherImpl(const std::string &name, const std::string &datatype,
+                             std::shared_ptr<NodeImpl> n, Publisher *p)
+    : matchedSubs(0), reserved(false), node(n), topicName(name), pub(p)
 {
+    topicDataType.setName(datatype.c_str());
 }
 
 PublisherImpl::~PublisherImpl()
@@ -23,12 +25,12 @@ PublisherImpl::~PublisherImpl()
     }
 }
 
-bool PublisherImpl::init(const Topic &t, const PublicationOpts &opts)
+bool PublisherImpl::init(const PublicationOpts &opts)
 {
     eprosima::fastrtps::PublisherAttributes pa;
-    pa.topic.topicDataType = t.datatype;
+    pa.topic.topicDataType = datatype();
     pa.topic.topicKind = NO_KEY;
-    pa.topic.topicName = t.name;
+    pa.topic.topicName = name();
     pa.times.heartbeatPeriod.fraction = 4294967 * 200; // ~200 millis
     // XXX: configure history
 
@@ -40,16 +42,13 @@ bool PublisherImpl::init(const Topic &t, const PublicationOpts &opts)
 
     // ugh, payload size must be defined
     assert(opts.maxPayloadSize > 0);
-
-    topicName = t.name;
-    topicDataType.setName(t.datatype.c_str());
     topicDataType.setSize(opts.maxPayloadSize);
 
     // fast-rtps requires datatype to be regsitered before we can
     // create the publisher.
 
     eprosima::fastrtps::TopicDataType *tdt;
-    if (!eprosima::fastrtps::Domain::getRegisteredType(node->part, t.datatype.c_str(), &tdt)) {
+    if (!eprosima::fastrtps::Domain::getRegisteredType(node->part, datatype().c_str(), &tdt)) {
         eprosima::fastrtps::Domain::registerType(node->part, &topicDataType);
     }
 
@@ -112,7 +111,7 @@ bool PublisherImpl::publish(const uint8_t *b, size_t len)
      * Publish some bytes.
      * Callers must have already serialized their data into b.
      *
-     * See reserve()/commit() for a zero-copy API.
+     * See reserve()/publishReserved() for a zero-copy API.
      */
 
     assert(!reserved && "publish() called while reserve() is still outstanding");

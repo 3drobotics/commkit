@@ -14,10 +14,11 @@ namespace commkit
 class PublisherImpl : public eprosima::fastrtps::PublisherListener
 {
 public:
-    PublisherImpl(std::shared_ptr<NodeImpl> n, Publisher *p);
+    PublisherImpl(const std::string &name, const std::string &datatype, std::shared_ptr<NodeImpl> n,
+                  Publisher *p);
     ~PublisherImpl();
 
-    bool init(const Topic &t, const PublicationOpts &opts);
+    bool init(const PublicationOpts &opts);
 
     bool reserve(uint8_t **b, size_t len);
     bool publishReserved(const uint8_t *b, size_t len);
