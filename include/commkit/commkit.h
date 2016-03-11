@@ -8,4 +8,3 @@
 #include <commkit/node.h>
 #include <commkit/publisher.h>
 #include <commkit/subscriber.h>
-#include <commkit/topic.h>

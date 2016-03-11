@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
-#include "topic.h"
 #include "callback.h"
 #include "visibility.h"
 
