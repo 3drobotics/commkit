@@ -1,6 +1,7 @@
 #include <commkit/node.h>
 #include "nodeimpl.h"
 
+#include <map>
 #include <mutex>
 
 namespace commkit
@@ -17,21 +18,26 @@ Node::~Node()
 std::shared_ptr<NodeImpl> Node::getImpl(const NodeOpts &opts)
 {
     /*
-     * accessor for our singleton NodeImpl.
-     * reconsider how to do away with this.
+     * cache of NodeImpls, keyed by domainID.
+     *
+     * Main idea here is to avoid creating multiple participants
+     * per domainID. Revisit if this turns out to be misguided.
      */
 
     static std::mutex mtx;
-    static NodeImpl *g = nullptr;
+    static std::map<uint32_t, std::weak_ptr<NodeImpl>> cache;
 
     std::lock_guard<std::mutex> guard(mtx);
-    if (!g) {
-        g = new NodeImpl();
-        if (!g->init(opts)) {
+
+    auto impl = cache[opts.domainID].lock();
+    if (!impl) {
+        impl = std::make_shared<NodeImpl>();
+        if (!impl || !impl->init(opts)) {
             return nullptr;
         }
+        cache[opts.domainID] = impl;
     }
-    return std::shared_ptr<NodeImpl>(g);
+    return impl;
 }
 
 bool Node::init(const std::string &name)
