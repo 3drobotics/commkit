@@ -17,8 +17,14 @@ class SubscriberImpl : public eprosima::fastrtps::SubscriberListener
 {
 public:
     SubscriberImpl(const std::string &name, const std::string &datatype,
-                   std::shared_ptr<NodeImpl> n, Subscriber *s);
+                   std::shared_ptr<NodeImpl> n);
     ~SubscriberImpl();
+
+    void setSubscriber(std::shared_ptr<Subscriber> s)
+    {
+        // Only expected to be called via Node during Subscriber construction.
+        sub = s;
+    }
 
     bool init(const SubscriptionOpts &opts);
 
@@ -54,7 +60,7 @@ private:
     ByteBufTopicData topicData;
     ByteBufTopicDataType topicDataType;
 
-    Subscriber *sub;
+    std::weak_ptr<Subscriber> sub;
 };
 
 } // namespace commkit

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
 #include <string>
 
-#include "callback.h"
-#include "visibility.h"
+#include <commkit/callback.h>
+#include <commkit/types.h>
+#include <commkit/visibility.h>
 
 namespace commkit
 {
@@ -61,9 +61,9 @@ public:
     std::string datatype();
     std::string name() const;
 
-    Callback<void(const Subscriber *)> onPublisherConnected;
-    Callback<void(const Subscriber *)> onPublisherDisconnected;
-    Callback<void(Subscriber *)> onMessage;
+    Callback<void(const SubscriberPtr)> onPublisherConnected;
+    Callback<void(const SubscriberPtr)> onPublisherDisconnected;
+    Callback<void(SubscriberPtr)> onMessage;
 
 private:
     Subscriber(const std::string &name, const std::string &datatype, std::shared_ptr<NodeImpl> n);

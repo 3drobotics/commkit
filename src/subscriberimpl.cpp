@@ -10,9 +10,14 @@ namespace commkit
 {
 
 SubscriberImpl::SubscriberImpl(const std::string &name, const std::string &datatype,
-                               std::shared_ptr<NodeImpl> n, Subscriber *s)
-    : matchedPubs(0), node(n), topicName(name), sub(s)
+                               std::shared_ptr<NodeImpl> n)
+    : matchedPubs(0), node(n), topicName(name)
 {
+    /*
+     * NB: we require 'sub' to be initialized separately via setSubscriber(),
+     * since we expect to be constructed from the Subscriber() ctor, at which point
+     * a shared_ptr to the about to be created Subscriber does not yet exist.
+     */
     topicDataType.setName(datatype.c_str());
 }
 
@@ -99,10 +104,14 @@ void SubscriberImpl::onSubscriptionMatched(eprosima::fastrtps::Subscriber *,
 
     if (info.status == MATCHED_MATCHING) {
         matchedPubs++;
-        sub->onPublisherConnected(sub);
+        if (auto sharedSub = sub.lock()) {
+            sharedSub->onPublisherConnected(sharedSub);
+        }
     } else {
         matchedPubs--;
-        sub->onPublisherDisconnected(sub);
+        if (auto sharedSub = sub.lock()) {
+            sharedSub->onPublisherDisconnected(sharedSub);
+        }
     }
 }
 
@@ -113,7 +122,9 @@ void SubscriberImpl::onNewDataMessage(eprosima::fastrtps::Subscriber *)
      * They can then either peek() or take() as appropriate.
      */
 
-    sub->onMessage(sub);
+    if (auto sharedSub = sub.lock()) {
+        sharedSub->onMessage(sharedSub);
+    }
 }
 
 } // namespace commkit

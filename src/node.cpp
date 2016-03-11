@@ -1,6 +1,7 @@
 #include <commkit/node.h>
 #include "nodeimpl.h"
 #include "publisherimpl.h"
+#include "subscriberimpl.h"
 
 #include <map>
 #include <mutex>
@@ -64,7 +65,9 @@ std::shared_ptr<Subscriber> Node::createSubscriber(const std::string &name,
      */
 
     // would rather use make_shared but Subscriber ctor is private
-    return std::shared_ptr<Subscriber>(new Subscriber(name, datatype, impl));
+    auto sub = std::shared_ptr<Subscriber>(new Subscriber(name, datatype, impl));
+    sub->impl->setSubscriber(sub);
+    return sub;
 }
 
 std::shared_ptr<Publisher> Node::createPublisher(const std::string &name,

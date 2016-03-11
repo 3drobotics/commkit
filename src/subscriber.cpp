@@ -7,7 +7,7 @@ namespace commkit
 
 Subscriber::Subscriber(const std::string &name, const std::string &datatype,
                        std::shared_ptr<NodeImpl> n)
-    : impl(new SubscriberImpl(name, datatype, n, this))
+    : impl(new SubscriberImpl(name, datatype, n))
 {
 }
 
