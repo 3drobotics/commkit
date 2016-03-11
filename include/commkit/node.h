@@ -22,7 +22,9 @@ struct COMMKIT_API NodeOpts {
     std::vector<std::string> unicastLocators;   // where to send runtime data
     std::vector<std::string> multicastLocators; // where to send discovery data
 
-    NodeOpts() : domainID(80)
+    static constexpr uint32_t DefaultDomain = 80;
+
+    NodeOpts() : domainID(DefaultDomain)
     {
     }
 };
