@@ -5,6 +5,7 @@
  */
 
 #include <commkit/callback.h>
+#include <commkit/types.h>
 #include <commkit/node.h>
 #include <commkit/publisher.h>
 #include <commkit/subscriber.h>
