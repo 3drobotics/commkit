@@ -54,7 +54,7 @@ public:
     bool init(const SubscriptionOpts &opts);
 
     bool peek(Payload *p);
-    int take(Payload *p);
+    bool take(Payload *p);
     unsigned matchedPublishers() const;
 
     // XXX: make this const once TopicDataType.getName() is const

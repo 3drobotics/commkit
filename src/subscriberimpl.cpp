@@ -77,7 +77,7 @@ bool SubscriberImpl::peek(Payload *p)
     return false;
 }
 
-int SubscriberImpl::take(Payload *p)
+bool SubscriberImpl::take(Payload *p)
 {
     /*
      * Reads the next sample and removes it from the buffer.

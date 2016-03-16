@@ -23,7 +23,7 @@ bool Subscriber::peek(Payload *p)
     return impl->peek(p);
 }
 
-int Subscriber::take(Payload *p)
+bool Subscriber::take(Payload *p)
 {
     return impl->take(p);
 }
