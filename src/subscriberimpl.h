@@ -46,11 +46,13 @@ public:
         return topicName;
     }
 
-    void onSubscriptionMatched(eprosima::fastrtps::Subscriber *,
+    void onSubscriptionMatched(eprosima::fastrtps::Subscriber *s,
                                eprosima::fastrtps::rtps::MatchingInfo &info);
-    void onNewDataMessage(eprosima::fastrtps::Subscriber *);
+    void onNewDataMessage(eprosima::fastrtps::Subscriber *s);
 
 private:
+    void ensureSubIsSet(eprosima::fastrtps::Subscriber *s);
+
     eprosima::fastrtps::Subscriber *frsub;
     unsigned matchedPubs;
     std::shared_ptr<NodeImpl> node;

@@ -56,7 +56,22 @@ bool SubscriberImpl::init(const SubscriptionOpts &opts)
         eprosima::fastrtps::Domain::registerType(node->part, &topicDataType);
     }
 
-    frsub = eprosima::fastrtps::Domain::createSubscriber(node->part, sa, this);
+    eprosima::fastrtps::Subscriber *s =
+        eprosima::fastrtps::Domain::createSubscriber(node->part, sa, this);
+    /*
+     * fast-rtps may begin delivering callbacks to us before Domain::createSubscriber()
+     * has returned. in this case, we capture a pointer to the subscriber in onNewDataMessage()
+     * on the assumption it will be the same one returned by createSubscriber().
+     *
+     * this allows clients to call peek() / take() in the context of any callbacks that are
+     * triggered before createSubscriber() returns.
+     */
+    if (frsub == nullptr) {
+        frsub = s;
+    } else {
+        assert(frsub == s);
+    }
+
     return (frsub != nullptr);
 }
 
@@ -94,12 +109,14 @@ bool SubscriberImpl::take(Payload *p)
     return false;
 }
 
-void SubscriberImpl::onSubscriptionMatched(eprosima::fastrtps::Subscriber *,
+void SubscriberImpl::onSubscriptionMatched(eprosima::fastrtps::Subscriber *s,
                                            eprosima::fastrtps::rtps::MatchingInfo &info)
 {
     /*
      * callback from fastrtps indicating our matched subscriber has changed.
      */
+
+    ensureSubIsSet(s);
 
     if (info.status == MATCHED_MATCHING) {
         matchedPubs++;
@@ -114,15 +131,29 @@ void SubscriberImpl::onSubscriptionMatched(eprosima::fastrtps::Subscriber *,
     }
 }
 
-void SubscriberImpl::onNewDataMessage(eprosima::fastrtps::Subscriber *)
+void SubscriberImpl::onNewDataMessage(eprosima::fastrtps::Subscriber *s)
 {
     /*
      * New data has arrived - inform our delegate
      * They can then either peek() or take() as appropriate.
      */
 
+    ensureSubIsSet(s);
+
     if (auto sharedSub = sub.lock()) {
         sharedSub->onMessage(sharedSub);
+    }
+}
+
+void SubscriberImpl::ensureSubIsSet(eprosima::fastrtps::Subscriber *s)
+{
+    /*
+     * Capture a pointer to the subscriber if we don't have one already.
+     * See more detailed comment in init() above.
+     */
+
+    if (frsub == nullptr) {
+        frsub = s;
     }
 }
 
