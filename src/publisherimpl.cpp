@@ -12,7 +12,7 @@ namespace commkit
 {
 
 PublisherImpl::PublisherImpl(const Topic &t, std::shared_ptr<NodeImpl> n)
-    : matchedSubs(0), reserved(false), node(n), topicName(t.name)
+    : frpub(nullptr), matchedSubs(0), reserved(false), node(n), topicName(t.name)
 {
     /*
      * NB: we require 'pub' to be initialized separately via setPublisher(),

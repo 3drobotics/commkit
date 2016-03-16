@@ -10,7 +10,7 @@ namespace commkit
 {
 
 SubscriberImpl::SubscriberImpl(const Topic &t, std::shared_ptr<NodeImpl> n)
-    : matchedPubs(0), node(n), topicName(t.name)
+    : frsub(nullptr), matchedPubs(0), node(n), topicName(t.name)
 {
     /*
      * NB: we require 'sub' to be initialized separately via setSubscriber(),
