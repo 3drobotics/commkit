@@ -13,8 +13,6 @@ SRCS_CPP := \
 	src/subscriber.cpp \
 	src/subscriberimpl.cpp
 
-INCS += -Iinclude
-
 # ensure public API is exported, see visibility.h
 CPPFLAGS += -DCOMMKIT_DLL -DCOMMKIT_DLL_EXPORTS
 
@@ -28,11 +26,22 @@ $(LIBCOMMKIT): $(OBJS)
 	@mkdir -p $(dir $@)
 	$(CXX) -shared $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-$(BUILD)/%.o: %.c
+COMMKIT_INCS_DIR := $(INSTALL)/include/commkit
+$(COMMKIT_INCS_DIR):
+	mkdir -p $(COMMKIT_INCS_DIR)
+
+COMMKIT_INCS := $(wildcard include/commkit/*.h)
+
+COMMKIT_INCS := $(addprefix $(INSTALL)/,$(COMMKIT_INCS))
+
+$(COMMKIT_INCS): $(COMMKIT_INCS_DIR)
+	cp $(wildcard include/commkit/*.h) $(COMMKIT_INCS_DIR)
+
+$(BUILD)/%.o: %.c $(COMMKIT_INCS)
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-$(BUILD)/%.o: %.cpp
+$(BUILD)/%.o: %.cpp $(COMMKIT_INCS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c $< -o $@
 
@@ -43,7 +52,12 @@ fmt-diff:
 	@python $(BASE)/tools/clang-format-run.py
 
 clean:
-	rm -rf $(BUILD) $(INSTALL) $(BOOST)
+	rm -rf $(BUILD)
+	rm -rf $(COMMKIT_INCS_DIR)
+	rmdir $(INSTALL)/include > /dev/null 2>&1 || true
+	rm -rf $(LIBCOMMKIT)
+	rmdir $(INSTALL)/lib > /dev/null 2>&1 || true
+	rmdir $(INSTALL) > /dev/null 2>&1 || true
 
 .PHONY: default all clean
 
