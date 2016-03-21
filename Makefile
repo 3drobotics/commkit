@@ -1,6 +1,4 @@
-
 BASE := $(abspath ../..)
-include $(BASE)/make/common_defs.mk
 include $(BASE)/make/project_defs.mk
 
 PROJ := commkit
@@ -51,14 +49,11 @@ fmt:
 fmt-diff:
 	@python $(BASE)/tools/clang-format-run.py
 
-clean:
-	rm -rf $(BUILD)
-	rm -rf $(COMMKIT_INCS_DIR)
-	rmdir $(INSTALL)/include > /dev/null 2>&1 || true
-	rm -rf $(LIBCOMMKIT)
-	rmdir $(INSTALL)/lib > /dev/null 2>&1 || true
-	rmdir $(INSTALL) > /dev/null 2>&1 || true
-
-.PHONY: default all clean
+# extend
+CLEAN_DIRS += $(COMMKIT_INCS_DIR)
+# override
+CLEAN_FILES = $(LIBCOMMKIT)
 
 -include $(OBJS:.o=.d)
+
+include $(BASE)/make/common_rules.mk
