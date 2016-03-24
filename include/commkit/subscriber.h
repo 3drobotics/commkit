@@ -36,8 +36,9 @@ struct COMMKIT_API SubscriptionOpts {
 struct COMMKIT_API Payload {
     uint8_t *bytes;
     size_t len;
+    int64_t sequence;
 
-    Payload() : bytes(nullptr), len(0)
+    Payload() : bytes(nullptr), len(0), sequence(SEQUENCE_NUMBER_INVALID)
     {
     }
 };
