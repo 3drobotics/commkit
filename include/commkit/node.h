@@ -42,10 +42,16 @@ public:
     bool init(const std::string &name);
     bool init(const NodeOpts &opts);
 
+    static Node find(uint32_t domainID = NodeOpts::DefaultDomain);
+
     std::shared_ptr<Subscriber> createSubscriber(const Topic &t);
     std::shared_ptr<Publisher> createPublisher(const Topic &t);
 
 private:
+    Node(std::shared_ptr<NodeImpl> ni) : impl(ni)
+    {
+    }
+
     static std::shared_ptr<NodeImpl> getImpl(const NodeOpts &opts);
 
     std::shared_ptr<NodeImpl> impl;

@@ -5,6 +5,7 @@
 
 #include <map>
 #include <mutex>
+#include <cassert>
 
 namespace commkit
 {
@@ -55,6 +56,23 @@ bool Node::init(const NodeOpts &opts)
 {
     impl = getImpl(opts);
     return (impl != nullptr);
+}
+
+Node Node::find(uint32_t domainID)
+{
+    /*
+     * Create a Node from an existing impl for 'domainID'.
+     *
+     * This can be more convenient than creating a new node & then initializing.
+     * Because it has no way of reporting an error, it asserts if a node
+     * has not already been created for the given domain.
+     */
+
+    NodeOpts opts;
+    opts.domainID = domainID;
+    auto i = getImpl(opts);
+    assert(i != nullptr && "didn't find existing node");
+    return Node(i);
 }
 
 std::shared_ptr<Subscriber> Node::createSubscriber(const Topic &t)
