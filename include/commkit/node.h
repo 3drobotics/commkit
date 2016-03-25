@@ -44,8 +44,8 @@ public:
 
     static Node find(uint32_t domainID = NodeOpts::DefaultDomain);
 
-    std::shared_ptr<Subscriber> createSubscriber(const Topic &t);
-    std::shared_ptr<Publisher> createPublisher(const Topic &t);
+    SubscriberPtr createSubscriber(const Topic &t);
+    PublisherPtr createPublisher(const Topic &t);
 
 private:
     Node(std::shared_ptr<NodeImpl> ni) : impl(ni)
