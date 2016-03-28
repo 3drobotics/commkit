@@ -16,7 +16,7 @@ CPPFLAGS += -DCOMMKIT_DLL -DCOMMKIT_DLL_EXPORTS
 
 LIBCOMMKIT := $(INSTALL)/lib/libcommkit.$(DYLIB_SUFFIX)
 
-LDLIBS += -lfastrtps
+LDLIBS += -lfastrtps -lcapnp -lkj
 
 all: $(LIBCOMMKIT)
 

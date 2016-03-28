@@ -7,6 +7,8 @@
 #include <commkit/types.h>
 #include <commkit/visibility.h>
 
+#include <capnp/message.h>
+
 namespace commkit
 {
 
@@ -37,6 +39,8 @@ public:
 
     bool reserve(uint8_t **b, size_t len);
     bool publishReserved(const uint8_t *b, size_t len);
+
+    bool publish(capnp::MessageBuilder &mb);
 
     bool publish(const uint8_t *b, size_t len);
     unsigned matchedSubscribers() const;
