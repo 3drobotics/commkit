@@ -38,6 +38,7 @@ bool Publisher::publishReserved(const uint8_t *b, size_t len)
     return impl->publishReserved(b, len);
 }
 
+#ifndef COMMKIT_NO_CAPNP
 bool Publisher::publish(capnp::MessageBuilder &mb)
 {
     /*
@@ -57,6 +58,7 @@ bool Publisher::publish(capnp::MessageBuilder &mb)
     auto bytes = words.asBytes();
     return impl->publish(bytes.begin(), bytes.size());
 }
+#endif
 
 bool Publisher::publish(const uint8_t *b, size_t len)
 {

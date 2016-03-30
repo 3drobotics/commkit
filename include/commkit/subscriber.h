@@ -7,7 +7,9 @@
 #include <commkit/types.h>
 #include <commkit/visibility.h>
 
+#ifndef COMMKIT_NO_CAPNP
 #include <capnp/serialize.h>
+#endif
 
 namespace commkit
 {
@@ -44,6 +46,7 @@ struct COMMKIT_API Payload {
     {
     }
 
+#ifndef COMMKIT_NO_CAPNP
     template <typename T>
     typename T::Reader toReader(bool *ok = nullptr)
     {
@@ -68,6 +71,7 @@ struct COMMKIT_API Payload {
         }
         return typename T::Reader();
     }
+#endif // COMMKIT_NO_CAPNP
 };
 
 /*

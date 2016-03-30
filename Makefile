@@ -16,7 +16,14 @@ CPPFLAGS += -DCOMMKIT_DLL -DCOMMKIT_DLL_EXPORTS
 
 LIBCOMMKIT := $(INSTALL)/lib/libcommkit.$(DYLIB_SUFFIX)
 
-LDLIBS += -lfastrtps -lcapnp -lkj
+LDLIBS += -lfastrtps
+
+# option to disable capn proto support
+ifeq ($(COMMKIT_NO_CAPNP),)
+LDLIBS += -lcapnp -lkj
+else
+CPPFLAGS += -DCOMMKIT_NO_CAPNP
+endif
 
 all: $(LIBCOMMKIT)
 
