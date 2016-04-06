@@ -28,6 +28,11 @@ bool Subscriber::take(Payload *p)
     return impl->take(p);
 }
 
+void Subscriber::waitForMessage()
+{
+    return impl->waitForMessage();
+}
+
 unsigned Subscriber::matchedPublishers() const
 {
     return impl->matchedPublishers();

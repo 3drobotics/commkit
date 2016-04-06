@@ -112,6 +112,11 @@ bool SubscriberImpl::take(Payload *p)
     return false;
 }
 
+void SubscriberImpl::waitForMessage()
+{
+    frsub->waitForUnreadMessage();
+}
+
 void SubscriberImpl::onSubscriptionMatched(eprosima::fastrtps::Subscriber *s,
                                            eprosima::fastrtps::rtps::MatchingInfo &info)
 {

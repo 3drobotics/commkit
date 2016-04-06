@@ -56,6 +56,7 @@ public:
 
     bool peek(Payload *p);
     bool take(Payload *p);
+    void waitForMessage();
     unsigned matchedPublishers() const;
 
     // XXX: make this const once TopicDataType.getName() is const

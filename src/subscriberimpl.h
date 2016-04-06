@@ -29,6 +29,7 @@ public:
 
     bool peek(Payload *p);
     bool take(Payload *p);
+    void waitForMessage();
 
     unsigned matchedPublishers() const
     {
