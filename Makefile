@@ -32,7 +32,7 @@ COMMKIT_INCS := $(wildcard include/commkit/*.h)
 
 COMMKIT_INCS := $(addprefix $(INSTALL)/,$(COMMKIT_INCS))
 
-$(COMMKIT_INCS): $(COMMKIT_INCS_DIR)
+$(COMMKIT_INCS): $(COMMKIT_INCS_DIR) $(wildcard include/commkit/*.h)
 	cp $(wildcard include/commkit/*.h) $(COMMKIT_INCS_DIR)
 
 $(BUILD)/%.o: %.c $(COMMKIT_INCS)
