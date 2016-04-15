@@ -39,6 +39,7 @@ bool PublisherImpl::init(const PublicationOpts &opts)
     pa.topic.topicDataType = datatype();
     pa.topic.topicKind = NO_KEY;
     pa.topic.topicName = name();
+    pa.times.heartbeatPeriod.seconds = 0;
     pa.times.heartbeatPeriod.fraction = 4294967 * 200; // ~200 millis
     // XXX: configure history
 
