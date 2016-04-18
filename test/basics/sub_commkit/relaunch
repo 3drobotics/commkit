@@ -1,0 +1,13 @@
+#!/bin/bash
+
+while true; do
+
+  install/x86_64-darwin/test_sub_commkit &
+
+  sleep 3
+
+  killall test_sub_commkit
+
+  sleep 1
+
+done
