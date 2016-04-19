@@ -29,6 +29,8 @@ set(COMMKIT_SRCS
     src/subscriberimpl.cpp
 )
 
+set(CMAKE_POSITION_INDEPENDENT_CODE True)
+
 # build an OBJECT library, which is then used to generate both shared
 # and static libs. this avoids specifying compile options (and compiling) twice.
 add_library(commkit_obj OBJECT ${COMMKIT_SRCS})
