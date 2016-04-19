@@ -5,7 +5,8 @@
 
 #include "time_util.h"
 
-class Resources {
+class Resources
+{
 
 public:
     Resources() : _cpu_load(0), _mtime_prev_us(0), _utime_prev_us(0), _stime_prev_us(0)
@@ -26,7 +27,8 @@ public:
         if (mtime_us == _mtime_prev_us) {
             _cpu_load = 1.0;
         } else {
-            _cpu_load = (double)((utime_us - _utime_prev_us) + (stime_us - _stime_prev_us)) / (double)(mtime_us - _mtime_prev_us);
+            _cpu_load = (double)((utime_us - _utime_prev_us) + (stime_us - _stime_prev_us)) /
+                        (double)(mtime_us - _mtime_prev_us);
         }
 
         _mtime_prev_us = mtime_us;
@@ -42,7 +44,6 @@ public:
     }
 
 private:
-
     std::uint64_t to_us(const struct timeval &tv)
     {
         return tv.tv_sec * 1000000ULL + tv.tv_usec;
@@ -56,5 +57,4 @@ private:
     // user and system times as of last measurement
     std::uint64_t _utime_prev_us;
     std::uint64_t _stime_prev_us;
-
 };

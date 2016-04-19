@@ -1,6 +1,7 @@
 #pragma once
 
-namespace TestConfig {
+namespace TestConfig
+{
 
 // default rate, messages/second
 constexpr unsigned default_rate = 500;
@@ -16,7 +17,8 @@ struct Config {
     unsigned rate;
     unsigned history;
     unsigned print_s;
-    Config() : reliable(false), rate(default_rate), history(default_history), print_s(default_print_s)
+    Config()
+        : reliable(false), rate(default_rate), history(default_history), print_s(default_print_s)
     {
     }
 };
@@ -24,5 +26,4 @@ struct Config {
 bool parse_args(int argc, char *argv[], Config &config);
 
 void usage(const char *name);
-
 };
