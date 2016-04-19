@@ -1,0 +1,98 @@
+
+
+# specify generic, since c or cpp will cause travis to export
+# CC, CXX with old/outdated versions
+language: generic
+
+cache: apt
+
+# trying travis Trusty beta in order to more easily get reasonably up to date deps
+# https://docs.travis-ci.com/user/trusty-ci-environment/
+sudo: required
+dist: trusty
+
+# specific os/compiler build configurations
+# XXX: figure out how to define sources/packages in just one place
+matrix:
+  include:
+
+    - os: linux
+      env: CC=gcc-4.8 CXX=g++-4.8
+      addons:
+        apt:
+          sources:
+            - kubuntu-backports
+            - ubuntu-toolchain-r-test
+            - boost-latest
+            - llvm-toolchain-precise-3.6
+          packages:
+            - cmake
+            - libboost1.55-all-dev
+            - clang-format-3.6
+            - g++-4.8
+            - gcc-4.8
+
+    - os: linux
+      env: CC=gcc-4.9 CXX=g++-4.9
+      addons:
+        apt:
+          sources:
+            - kubuntu-backports
+            - ubuntu-toolchain-r-test
+            - boost-latest
+            - llvm-toolchain-precise-3.6
+          packages:
+            - cmake
+            - libboost1.55-all-dev
+            - clang-format-3.6
+            - g++-4.9
+            - gcc-4.9
+
+    - os: linux
+      env: CC=gcc-5 CXX=g++-5
+      addons:
+        apt:
+          sources:
+            - kubuntu-backports
+            - ubuntu-toolchain-r-test
+            - boost-latest
+            - llvm-toolchain-precise-3.6
+          packages:
+            - cmake
+            - libboost1.55-all-dev
+            - clang-format-3.6
+            - g++-5
+            - gcc-5
+
+    # XXX: reinstate some form of cross compilation
+    # - os: linux
+    #   env: ARCH=arm
+    #   addons:
+    #     apt:
+    #       sources:
+    #         - kubuntu-backports
+    #         - ubuntu-toolchain-r-test
+    #         - llvm-toolchain-precise-3.6
+    #       packages:
+    #         - cmake
+    #         - clang-format-3.6
+    #         - g++-arm-linux-gnueabihf
+    #         - gcc-arm-linux-gnueabihf
+
+    # XXX: missing for now, clang on linux - Fast-RTPS does not build
+
+    - os: osx
+      env: CC=clang CXX=clang++
+      compiler: clang
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then lsb_release -a ; fi
+  - ./tools/travis/install-deps.sh
+  - cmake --version
+
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew reinstall cmake clang-format ; fi
+
+script:
+  - ./tools/travis/build.sh
