@@ -9,11 +9,10 @@ if(POLICY CMP0042)
 endif()
 
 # path to compiled Fast-RTPS library must be provided
-# XXX: contribute a FindFastRTPS.cmake upstream such that we can use find_package()
+# XXX: create a FindFastRTPS.cmake and use find_package()
 if (NOT FASTRTPS)
     message(FATAL_ERROR "error - FASTRTPS installation location not specified")
 endif()
-set(FASTRTPS_LIB ${FASTRTPS}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}fastrtps${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 # set default build type
 if (NOT CMAKE_BUILD_TYPE)
@@ -59,16 +58,15 @@ include_directories(
 )
 
 # dependencies - always rely on fast-rtps, optionally disable capnproto support
-
-set(commkit_LIBS ${FASTRTPS_LIB})
+find_library(LIBFASTRTPS fastrtps)
+set(commkit_LIBS ${LIBFASTRTPS})
 
 if(COMMKIT_NO_CAPNP)
     add_definitions(-DCOMMKIT_NO_CAPNP)
 else()
-    # import manually until https://github.com/sandstorm-io/capnproto/pull/178 is resolved
-    set(commkit_LIBS ${commkit_LIBS}
-        ${CMAKE_SHARED_LIBRARY_PREFIX}capnp${CMAKE_SHARED_LIBRARY_SUFFIX}
-        ${CMAKE_SHARED_LIBRARY_PREFIX}kj${CMAKE_SHARED_LIBRARY_SUFFIX})
+    find_library(LIBCAPNP capnp)
+    find_library(LIBKJ kj)
+    set(commkit_LIBS ${commkit_LIBS} ${LIBCAPNP} ${LIBKJ})
 endif()
 
 target_link_libraries(commkit_shared ${commkit_LIBS})
