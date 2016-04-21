@@ -35,6 +35,16 @@ set(CMAKE_POSITION_INDEPENDENT_CODE True)
 # and static libs. this avoids specifying compile options (and compiling) twice.
 add_library(commkit_obj OBJECT ${COMMKIT_SRCS})
 
+if(${CMAKE_VERSION} VERSION_LESS "3.1")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+else()
+    # beware: https://cmake.org/Bug/view.php?id=15797
+    set_target_properties(commkit_obj PROPERTIES
+        CXX_STANDARD 11
+        CXX_STANDARD_REQUIRED YES
+    )
+endif()
+
 add_library(commkit_shared SHARED $<TARGET_OBJECTS:commkit_obj>)
 add_library(commkit_static STATIC $<TARGET_OBJECTS:commkit_obj>)
 set_target_properties(commkit_shared PROPERTIES OUTPUT_NAME commkit)
@@ -42,8 +52,6 @@ set_target_properties(commkit_static PROPERTIES OUTPUT_NAME commkit)
 
 # ensure public API is exported, see visibility.h
 add_definitions(-DCOMMKIT_DLL -DCOMMKIT_DLL_EXPORTS)
-
-set_property(TARGET commkit_obj PROPERTY CXX_STANDARD 11)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
