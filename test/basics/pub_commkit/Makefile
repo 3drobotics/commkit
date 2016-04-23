@@ -4,6 +4,8 @@ include $(BASE)/make/project_defs.mk
 VPATH += ..
 INCS += -I..
 
+CPPFLAGS += -DCOMMKIT_NO_CAPNP
+
 EXE := test_pub_commkit
 
 SRCS_CPP = test_pub_commkit.cpp test_config.cpp

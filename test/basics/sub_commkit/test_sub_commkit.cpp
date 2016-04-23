@@ -1,47 +1,48 @@
-#include <errno.h>
-#include <getopt.h>
-#include <poll.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 
+#include <chrono>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <iomanip>
+#include <iostream>
+#include <thread>
 
-#include "fastrtps/log/Log.h"
-
-#include <commkit/node.h>
-#include <commkit/subscriber.h>
-
-#include "time_util.h"
+#include <fastrtps/log/Log.h>
+#include <commkit/commkit.h>
 
 #include "topic_data.h"
 #include "test_config.h"
 #include "resources.h"
 
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::fixed;
+using std::left;
+using std::right;
+using std::setprecision;
+using std::setw;
+
 static const char *prog = "test_sub_commkit";
 
-uint64_t zero_ns;
-uint64_t print_interval_ns;
-uint64_t print_next_ns;
+commkit::clock::time_point time_zero;
+commkit::clock::time_point print_next;
+commkit::clock::duration print_interval;
 
 static Resources resources;
 
 // sequence number in last packet received
-static uint32_t last_seq = UINT32_MAX;
+static int64_t last_seq = commkit::SEQUENCE_NUMBER_INVALID;
 
 static void onConnect(const commkit::SubscriberPtr sub)
 {
-    printf("publisher connected (%u)\n", sub->matchedPublishers());
+    cout << "publisher connected (" << sub->matchedPublishers() << ")" << endl;
 }
 
 static void onDisconnect(const commkit::SubscriberPtr sub)
 {
-    printf("publisher disconnected (%u)\n", sub->matchedPublishers());
+    cout << "publisher disconnected (" << sub->matchedPublishers() << ")" << endl;
 }
 
 static void onMessage(commkit::SubscriberPtr sub)
@@ -49,9 +50,11 @@ static void onMessage(commkit::SubscriberPtr sub)
     commkit::Payload payload;
     while (sub->take(&payload)) {
 
+        commkit::clock::time_point now = commkit::clock::now();
+
         if (payload.len != sizeof(TopicData)) {
-            printf("message wrong length (expected %u, got %u)\n", (unsigned)sizeof(TopicData),
-                   (unsigned)(payload.len));
+            cout << "message wrong length (expected " << sizeof(TopicData) << ", got "
+                 << payload.len << ")" << endl;
             continue;
         }
 
@@ -59,27 +62,33 @@ static void onMessage(commkit::SubscriberPtr sub)
         memcpy(&topic_data, payload.bytes, sizeof(TopicData));
 
         // look for and print gaps in sequence number
-        uint32_t sequence = topic_data.sequence;
-        if (last_seq != UINT32_MAX && (sequence - last_seq) > 1) {
-            printf("gap: %u %50c\n", sequence - last_seq - 1, ' ');
+        if (last_seq != commkit::SEQUENCE_NUMBER_INVALID && (payload.sequence - last_seq) != 1) {
+            cout << "gap: " << payload.sequence - last_seq - 1 << endl;
         }
-        last_seq = sequence;
+        last_seq = payload.sequence;
 
-        uint64_t now_ns = clock_gettime_ns(CLOCK_MONOTONIC);
-        if (now_ns >= print_next_ns) {
+        // look for long latencies (assumes same system pub/sub)
+        commkit::clock::duration latency = now - payload.sourceTimestamp;
+        if (latency > std::chrono::milliseconds(10)) {
+            cout << "latency: " << fixed << setprecision(3) << commkit::toDouble(latency) << endl;
+        }
+
+        if (now >= print_next) {
             resources.sample();
             double cpu = resources.cpu_load();
-            uint64_t msec = (now_ns - zero_ns + 500000) / 1000000;
-            printf("%-18s %6u.%03u: %6u %5.1f%%\n", prog, (unsigned)(msec / 1000),
-                   (unsigned)(msec % 1000), sequence, cpu * 100);
-            print_next_ns += print_interval_ns;
+            std::ios::fmtflags f(cout.flags()); // save state
+            cout << setw(18) << left << prog << right << " " << setw(10) << fixed << setprecision(3)
+                 << commkit::toDouble(now - time_zero) << ": " << setw(6) << payload.sequence << " "
+                 << setw(5) << fixed << setprecision(1) << cpu * 100.0 << "%" << endl;
+            cout.flags(f); // restore state
+            print_next += print_interval;
         }
     }
 }
 
 int main(int argc, char *argv[])
 {
-    printf("built %s %s\n", __DATE__, __TIME__);
+    cout << "built " __DATE__ " " __TIME__ << endl;
 
     TestConfig::Config config;
     if (!TestConfig::parse_args(argc, argv, config)) {
@@ -88,25 +97,23 @@ int main(int argc, char *argv[])
 
     eprosima::Log::setVerbosity(eprosima::VERB_ERROR);
 
-    // zero time is next one-second boundary that is least 0.1 sec away
-    zero_ns = clock_gettime_ns(CLOCK_MONOTONIC) + 1100000000; // 1.1 sec from now
-    zero_ns = zero_ns - (zero_ns % 1000000000); // round down (shaves off up to 1 second)
-    print_interval_ns = config.print_s * 1000000000ULL;
-    print_next_ns = zero_ns;
+    print_interval = commkit::clock::duration(std::chrono::seconds(config.print_s));
+    time_zero = commkit::clock::now();
+    print_next = time_zero;
 
-    printf("create node\n");
+    cout << "create node" << endl;
     commkit::Node node;
     if (!node.init(prog)) {
-        printf("error\n");
+        cerr << "error" << endl;
         exit(1);
     }
 
     commkit::Topic topic(TopicData::topic_name, TopicData::topic_type, sizeof(TopicData));
 
-    printf("create subscriber\n");
+    cout << "create subscriber" << endl;
     auto sub = node.createSubscriber(topic);
     if (sub == nullptr) {
-        printf("error\n");
+        cerr << "error" << endl;
         exit(1);
     }
     sub->onPublisherConnected.connect(&onConnect);
@@ -116,12 +123,12 @@ int main(int argc, char *argv[])
     sub_opts.reliable = config.reliable;
     sub_opts.history = config.history;
     if (!sub->init(sub_opts)) {
-        printf("error\n");
+        cerr << "error" << endl;
         exit(1);
     }
-    usleep(500000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    printf("ready\n");
+    cout << "ready" << endl;
 
     while (true) {
         pause();
