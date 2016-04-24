@@ -23,6 +23,12 @@ $ make -j8
 
 uniform code formatting is enforced via `clang-format`, with formatting rules defined in `.clang-format`. run `make fmt` to format code, or `make fmt-diff` to see which files would be formatted.
 
+## testing
+
+unit testing is supported via [googletest](https://github.com/google/googletest/blob/master/googletest/docs/Primer.md), with tests defined in `test/unit`, generating the test binary that be run via `./test/unit/commkit-tests`.
+
+to disable testing at build time, invoke cmake with `-DCOMMKIT_NO_TEST`.
+
 ### notes
 
 commkit currently relies on Fast-RTPS.

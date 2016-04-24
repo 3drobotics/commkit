@@ -74,7 +74,7 @@ target_link_libraries(commkit_shared ${commkit_LIBS})
 # code formatting support
 include(cmake/fmt.cmake)
 
-if(NOT NOTEST)
+if(NOT COMMKIT_NO_TEST)
     include(cmake/gtest.cmake)
     add_subdirectory(test/unit)
 endif()
