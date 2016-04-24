@@ -58,7 +58,7 @@ include_directories(
 )
 
 # dependencies - always rely on fast-rtps, optionally disable capnproto support
-find_library(LIBFASTRTPS fastrtps)
+find_library(LIBFASTRTPS fastrtps HINTS ${FASTRTPS}/lib)
 set(commkit_LIBS ${LIBFASTRTPS})
 
 if(COMMKIT_NO_CAPNP)
