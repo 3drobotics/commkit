@@ -74,6 +74,10 @@ target_link_libraries(commkit_shared ${commkit_LIBS})
 # code formatting support
 include(cmake/fmt.cmake)
 
+if(NOT NOTEST)
+    include(cmake/gtest.cmake)
+    add_subdirectory(test/unit)
+endif()
 
 # XXX: would like INCLUDE installation items to be determined via a target_include_directories()
 # invocation, but those includes must be specified on the target being compiled, which in our case
