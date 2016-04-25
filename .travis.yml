@@ -83,6 +83,7 @@ matrix:
     # XXX: missing for now, clang on linux - Fast-RTPS does not build
 
     - os: osx
+      osx_image: xcode7.3
       env: CC=clang CXX=clang++
       compiler: clang
 
