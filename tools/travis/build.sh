@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # we start out in tree, cd out and then build
 cd ..
 mkdir build-commkit
