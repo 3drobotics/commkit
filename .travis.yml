@@ -32,21 +32,22 @@ matrix:
             - g++-4.8
             - gcc-4.8
 
-    - os: linux
-      env: CC=gcc-4.9 CXX=g++-4.9
-      addons:
-        apt:
-          sources:
-            - kubuntu-backports
-            - ubuntu-toolchain-r-test
-            - boost-latest
-            - llvm-toolchain-precise-3.6
-          packages:
-            - cmake
-            - libboost1.55-all-dev
-            - clang-format-3.6
-            - g++-4.9
-            - gcc-4.9
+    # minimize build matrix to be a good travis citizen
+    # - os: linux
+    #   env: CC=gcc-4.9 CXX=g++-4.9
+    #   addons:
+    #     apt:
+    #       sources:
+    #         - kubuntu-backports
+    #         - ubuntu-toolchain-r-test
+    #         - boost-latest
+    #         - llvm-toolchain-precise-3.6
+    #       packages:
+    #         - cmake
+    #         - libboost1.55-all-dev
+    #         - clang-format-3.6
+    #         - g++-4.9
+    #         - gcc-4.9
 
     - os: linux
       env: CC=gcc-5 CXX=g++-5
