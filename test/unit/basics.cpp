@@ -30,7 +30,7 @@ TEST(BasicsTest, Basic)
 
     // ensure they're connected
     unsigned tries = 100;
-    while (pub->matchedSubscribers() == 0 && sub->matchedPublishers() == 0) {
+    while (pub->matchedSubscribers() == 0 || sub->matchedPublishers() == 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         ASSERT_GT(tries--, 0);
     }
