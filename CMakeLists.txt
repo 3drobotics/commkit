@@ -19,6 +19,9 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Select build type" FORCE)
 endif()
 
+option(BUILD_CAPNP "Include capn proto support." ON)
+option(BUILD_TESTING "Build unit tests." ON)
+
 set(COMMKIT_SRCS
     src/node.cpp
     src/nodeimpl.cpp
@@ -61,12 +64,12 @@ include_directories(
 find_library(LIBFASTRTPS fastrtps HINTS ${FASTRTPS}/lib)
 set(commkit_LIBS ${LIBFASTRTPS})
 
-if(COMMKIT_NO_CAPNP)
-    add_definitions(-DCOMMKIT_NO_CAPNP)
-else()
+if(BUILD_CAPNP)
     find_library(LIBCAPNP capnp)
     find_library(LIBKJ kj)
     set(commkit_LIBS ${commkit_LIBS} ${LIBCAPNP} ${LIBKJ})
+else()
+    add_definitions(-DCOMMKIT_NO_CAPNP)
 endif()
 
 target_link_libraries(commkit_shared ${commkit_LIBS})
@@ -74,7 +77,7 @@ target_link_libraries(commkit_shared ${commkit_LIBS})
 # code formatting support
 include(cmake/fmt.cmake)
 
-if(NOT COMMKIT_NO_TEST)
+if(BUILD_TESTING)
     include(cmake/gtest.cmake)
     add_subdirectory(test/unit)
 endif()
