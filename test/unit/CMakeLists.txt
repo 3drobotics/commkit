@@ -8,6 +8,7 @@ find_package(Threads REQUIRED)
 set(TEST_SOURCES
     main.cpp
     basics.cpp
+    chronoimpl.cpp
 )
 
 add_executable(commkit-tests ${TEST_SOURCES})
