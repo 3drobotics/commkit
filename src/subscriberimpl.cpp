@@ -1,4 +1,5 @@
 #include "typesimpl.h"
+#include "chronoimpl.h"
 #include "subscriberimpl.h"
 #include "nodeimpl.h"
 
@@ -90,6 +91,7 @@ bool SubscriberImpl::peek(Payload *p)
         p->bytes = topicData.buf;
         p->len = topicData.len;
         p->sequence = commkit::toInt64(si.sample_identity.sequence_number());
+        p->sourceTimestamp = commkit::toTimePoint(si.sourceTimestamp);
         return true;
     }
 
@@ -108,6 +110,7 @@ bool SubscriberImpl::take(Payload *p)
         p->bytes = topicData.buf;
         p->len = topicData.len;
         p->sequence = commkit::toInt64(si.sample_identity.sequence_number());
+        p->sourceTimestamp = commkit::toTimePoint(si.sourceTimestamp);
         return true;
     }
 

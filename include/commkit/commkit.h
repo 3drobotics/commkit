@@ -5,6 +5,7 @@
  */
 
 #include <commkit/callback.h>
+#include <commkit/chrono.h>
 #include <commkit/types.h>
 #include <commkit/topic.h>
 #include <commkit/make_unique_cpp11.h>

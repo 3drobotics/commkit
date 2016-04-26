@@ -1,8 +1,10 @@
 #pragma once
 
+#include <chrono>
 #include <string>
 
 #include <commkit/callback.h>
+#include <commkit/chrono.h>
 #include <commkit/topic.h>
 #include <commkit/types.h>
 #include <commkit/visibility.h>
@@ -41,8 +43,15 @@ struct COMMKIT_API Payload {
     uint8_t *bytes;
     size_t len;
     int64_t sequence;
+    /*
+     * Time the message was sent by the publisher (based on the
+     * publisher's clock)
+     */
+    clock::time_point sourceTimestamp;
 
-    Payload() : bytes(nullptr), len(0), sequence(SEQUENCE_NUMBER_INVALID)
+    Payload()
+        : bytes(nullptr), len(0), sequence(SEQUENCE_NUMBER_INVALID),
+          sourceTimestamp(TIME_POINT_INVALID)
     {
     }
 

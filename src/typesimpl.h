@@ -4,6 +4,8 @@
 
 #include <fastrtps/rtps/common/SequenceNumber.h>
 
+#include "commkit/types.h"
+
 namespace commkit
 {
 
