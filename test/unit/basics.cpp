@@ -20,12 +20,12 @@ TEST(BasicsTest, Basic)
 
     auto pub = n1.createPublisher(t);
     commkit::PublicationOpts popts;
-    popts.reliable = false;
+    popts.reliable = true;
     EXPECT_TRUE(pub->init(popts));
 
     auto sub = n2.createSubscriber(t);
     commkit::SubscriptionOpts sopts;
-    sopts.reliable = false;
+    sopts.reliable = true;
     EXPECT_TRUE(sub->init(sopts));
 
     // ensure they're connected
@@ -41,7 +41,10 @@ TEST(BasicsTest, Basic)
         npub = i;
         EXPECT_TRUE(pub->publish(reinterpret_cast<const uint8_t *>(&npub), sizeof(npub)));
 
-        sub->waitForMessage();
+        // we are not validating receipt within a certain timeframe,
+        // just want to give it time to arrive.
+        // this is assumed to be way more than necessary.
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
 
         commkit::Payload p;
         EXPECT_TRUE(sub->take(&p));
