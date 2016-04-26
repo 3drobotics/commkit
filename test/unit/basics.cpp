@@ -39,7 +39,7 @@ TEST(BasicsTest, Basic)
 
     for (unsigned i = 0; i < 10; ++i) {
         npub = i;
-        EXPECT_TRUE(pub->publish(reinterpret_cast<const uint8_t*>(&npub), sizeof(npub)));
+        EXPECT_TRUE(pub->publish(reinterpret_cast<const uint8_t *>(&npub), sizeof(npub)));
 
         sub->waitForMessage();
 
