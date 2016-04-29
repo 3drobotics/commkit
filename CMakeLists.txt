@@ -68,6 +68,7 @@ set(commkit_LIBS ${LIBFASTRTPS})
 if(BUILD_CAPNP)
     find_library(LIBCAPNP capnp)
     find_library(LIBKJ kj)
+    find_library(LIBCAPNPC capnpc)
     set(commkit_LIBS ${commkit_LIBS} ${LIBCAPNP} ${LIBKJ})
 else()
     add_definitions(-DCOMMKIT_NO_CAPNP)
@@ -81,6 +82,25 @@ include(cmake/fmt.cmake)
 if(BUILD_TESTING)
     include(cmake/gtest.cmake)
     add_subdirectory(test/unit)
+endif()
+
+if(BUILD_CAPNP)
+    add_executable(commkit-listen
+        src/commkit-listen.cpp
+    )
+    
+    if(${CMAKE_VERSION} VERSION_LESS "3.1")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+    else()
+        # beware: https://cmake.org/Bug/view.php?id=15797
+        set_target_properties(commkit-listen PROPERTIES
+            CXX_STANDARD 11
+            CXX_STANDARD_REQUIRED YES
+        )
+    endif()
+    
+    target_link_libraries(commkit-listen commkit_shared ${LIBCAPNP} ${LIBKJ} ${LIBCAPNPC})
+    install(TARGETS commkit-listen RUNTIME DESTINATION bin)
 endif()
 
 # XXX: would like INCLUDE installation items to be determined via a target_include_directories()
