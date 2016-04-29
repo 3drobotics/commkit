@@ -2,6 +2,11 @@
 
 #include <string>
 
+#ifndef COMMKIT_NO_CAPNP
+#include <commkit/visibility.h>
+#include <capnp/schema.h>
+#endif
+
 namespace commkit
 {
 
@@ -14,6 +19,16 @@ struct Topic {
         : name(n), datatype(dt), maxPayloadSize(maxSz)
     {
     }
+
+#ifndef COMMKIT_NO_CAPNP
+    static std::string COMMKIT_API capn_type_id(capnp::Schema schema);
+
+    template <typename T>
+    static Topic capn(const std::string &n)
+    {
+        return Topic(n, capn_type_id(capnp::Schema::from<T>()), 1024);
+    }
+#endif
 };
 
 } // namespace commkit

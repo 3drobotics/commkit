@@ -29,6 +29,7 @@ set(COMMKIT_SRCS
     src/publisherimpl.cpp
     src/subscriber.cpp
     src/subscriberimpl.cpp
+    src/topic.cpp
 )
 
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
