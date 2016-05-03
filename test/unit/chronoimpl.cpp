@@ -210,7 +210,7 @@ TEST(ChronoimplTest, Duration)
 
     d = commkit::toRtpsDuration(std::chrono::nanoseconds(17));
     EXPECT_EQ(d.seconds, 0);
-    EXPECT_EQ(d.fraction, (uint64_t(1) << 32) *17 / 1000000000);
+    EXPECT_EQ(d.fraction, (uint64_t(1) << 32) * 17 / 1000000000);
 
     d = commkit::toRtpsDuration(std::chrono::minutes(2));
     EXPECT_EQ(d.seconds, 120);
