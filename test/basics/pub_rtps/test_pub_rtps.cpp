@@ -92,6 +92,8 @@ int main(int argc, char *argv[])
     printf("create rtps writer\n");
     TestWriterListener writer_listener;
     WriterAttributes writer_attr;
+    writer_attr.times.heartbeatPeriod.seconds = 0;
+    writer_attr.times.heartbeatPeriod.fraction = 4294967 * 100; // ~100 millis
     writer_attr.endpoint.reliabilityKind = config.reliable ? RELIABLE : BEST_EFFORT;
     RTPSWriter *writer =
         RTPSDomain::createRTPSWriter(part, writer_attr, writer_hist, &writer_listener);

@@ -125,7 +125,8 @@ int main(int argc, char *argv[])
     pub_attr.topic.historyQos.depth = config.history;
     pub_attr.topic.resourceLimitsQos.max_samples = 2 * config.history;
     pub_attr.topic.resourceLimitsQos.allocated_samples = 2 * config.history;
-    pub_attr.times.heartbeatPeriod.fraction = 4294967 * 200; // ~200 millis
+    pub_attr.times.heartbeatPeriod.seconds = 0;
+    pub_attr.times.heartbeatPeriod.fraction = 4294967 * 100; // ~100 millis
     pub_attr.qos.m_reliability.kind =
         config.reliable ? RELIABLE_RELIABILITY_QOS : BEST_EFFORT_RELIABILITY_QOS;
     Publisher *pub = Domain::createPublisher(part, pub_attr, &test_publisher_listener);

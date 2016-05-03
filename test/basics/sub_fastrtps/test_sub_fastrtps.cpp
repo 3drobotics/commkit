@@ -176,6 +176,8 @@ int main(int argc, char *argv[])
     sub_attr.topic.topicKind = NO_KEY;
     sub_attr.topic.topicName = TopicData::topic_name;
     sub_attr.topic.topicDataType = TopicData::topic_type;
+    sub_attr.times.heartbeatResponseDelay.seconds = 0;
+    sub_attr.times.heartbeatResponseDelay.fraction = 4294967 * 50; // ~50 millis;
     sub_attr.topic.historyQos.kind = KEEP_LAST_HISTORY_QOS;
     sub_attr.topic.historyQos.depth = config.history;
     sub_attr.topic.resourceLimitsQos.max_samples = 2 * config.history;

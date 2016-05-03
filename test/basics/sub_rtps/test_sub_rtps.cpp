@@ -140,6 +140,8 @@ int main(int argc, char *argv[])
     printf("create rtps reader\n");
     TestReaderListener reader_listener;
     ReaderAttributes reader_attr;
+    reader_attr.times.heartbeatResponseDelay.seconds = 0;
+    reader_attr.times.heartbeatResponseDelay.fraction = 4294967 * 50; // ~50 millis;
     reader_attr.endpoint.reliabilityKind = config.reliable ? RELIABLE : BEST_EFFORT;
     RTPSReader *reader =
         RTPSDomain::createRTPSReader(part, reader_attr, reader_hist, &reader_listener);
