@@ -4,7 +4,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
 
 add_executable(sub_fastrtps
     test_sub_fastrtps.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../time_util.c
     ${CMAKE_CURRENT_SOURCE_DIR}/../test_config.cpp
 )
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
