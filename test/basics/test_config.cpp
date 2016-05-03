@@ -8,12 +8,19 @@ bool TestConfig::parse_args(int argc, char *argv[], Config &config)
 {
     char *endptr;
     int c;
-    while ((c = getopt(argc, argv, "h:p:q:r:?")) != -1) {
+    while ((c = getopt(argc, argv, "h:n:p:q:r:?")) != -1) {
 
         switch (c) {
 
         case 'h': // history (depth)
             config.history = strtol(optarg, &endptr, 0);
+            if (optarg == NULL || *optarg == '\0' || *endptr != '\0') {
+                return false;
+            }
+            break;
+
+        case 'n': // count (messages)
+            config.count = strtol(optarg, &endptr, 0);
             if (optarg == NULL || *optarg == '\0' || *endptr != '\0') {
                 return false;
             }

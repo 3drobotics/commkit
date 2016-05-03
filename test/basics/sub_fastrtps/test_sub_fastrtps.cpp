@@ -35,6 +35,8 @@ uint64_t zero_ns;
 uint64_t print_interval_ns;
 uint64_t print_next_ns;
 
+static volatile int msg_count = -1;
+
 static Resources resources;
 
 class TestTopicDataType : public TopicDataType
@@ -94,7 +96,11 @@ public:
     {
         TopicData topic_data;
         SampleInfo_t sample_info;
-        while (sub->takeNextData((void *)&topic_data, &sample_info)) {
+        while (msg_count != 0 && sub->takeNextData((void *)&topic_data, &sample_info)) {
+
+            if (msg_count > 0)
+                msg_count--;
+
             if (sample_info.sampleKind != ALIVE) {
                 continue;
             }
@@ -144,6 +150,8 @@ int main(int argc, char *argv[])
     print_interval_ns = config.print_s * 1000000000ULL;
     print_next_ns = zero_ns;
 
+    msg_count = config.count;
+
     printf("create participant\n");
     ParticipantAttributes part_attr;
     part_attr.rtps.builtin.use_SIMPLE_RTPSParticipantDiscoveryProtocol = true;
@@ -182,9 +190,12 @@ int main(int argc, char *argv[])
 
     printf("ready\n");
 
-    while (true) {
-        pause();
+    while (msg_count != 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+
+    Domain::removeSubscriber(sub);
+    Domain::removeParticipant(part);
 
     return 0;
 

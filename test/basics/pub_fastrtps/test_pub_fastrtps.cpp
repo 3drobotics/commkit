@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 
     uint32_t sequence = 0;
 
-    while (true) {
+    while (config.count != 0) {
 
         uint64_t now_ns = clock_gettime_ns(CLOCK_MONOTONIC);
         uint32_t delay_us = 0;
@@ -179,7 +179,13 @@ int main(int argc, char *argv[])
         sequence++;
         pub_next_ns += pub_interval_ns;
 
-    } // while (true)
+        if (config.count > 0)
+            config.count--;
+
+    } // while (config.count != 0)
+
+    Domain::removePublisher(pub);
+    Domain::removeParticipant(part);
 
     return 0;
 
