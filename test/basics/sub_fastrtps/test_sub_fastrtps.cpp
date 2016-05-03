@@ -9,8 +9,12 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
+#include <chrono>
 #include <cstdlib>
 #include <cstring>
+#include <iomanip>
+#include <iostream>
+#include <thread>
 
 #include <fastrtps/Domain.h>
 #include <fastrtps/TopicDataType.h>
@@ -21,8 +25,6 @@
 #include <fastrtps/subscriber/SampleInfo.h>
 #include <fastrtps/log/Log.h>
 
-#include "time_util.h"
-
 #include "topic_data.h"
 #include "test_config.h"
 #include "resources.h"
@@ -31,13 +33,23 @@ using namespace eprosima::fastrtps;
 
 static const char *prog = "test_sub_fastrtps";
 
-uint64_t zero_ns;
-uint64_t print_interval_ns;
-uint64_t print_next_ns;
+static std::chrono::steady_clock::time_point time_zero;
+static std::chrono::steady_clock::time_point print_next;
+static std::chrono::steady_clock::duration print_interval;
 
 static volatile int msg_count = -1;
 
 static Resources resources;
+
+inline double toDouble(std::chrono::steady_clock::duration d)
+{
+    return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
+}
+
+inline int64_t toInt64(SequenceNumber_t s)
+{
+    return (int64_t(s.high) << 32) | s.low;
+}
 
 class TestTopicDataType : public TopicDataType
 {
@@ -112,19 +124,26 @@ public:
             }
             _last_seq = sequence;
 
-            uint64_t now_ns = clock_gettime_ns(CLOCK_MONOTONIC);
-            if (now_ns >= print_next_ns) {
+            std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+            if (now >= print_next) {
                 resources.sample();
                 double cpu = resources.cpu_load();
-                uint64_t msec = (now_ns - zero_ns + 500000) / 1000000;
-                printf("%-18s %6u.%03u: %6u %5.1f%%\n", prog, (unsigned)(msec / 1000),
-                       (unsigned)(msec % 1000), sequence, cpu * 100);
-                print_next_ns += print_interval_ns;
+                std::ios::fmtflags f(std::cout.flags()); // save state
+                std::cout << std::setw(18) << std::left << prog << std::right << " "
+                          << std::setw(10) << std::fixed << std::setprecision(3)
+                          << toDouble(now - time_zero) << ": " << std::setw(6) << sequence << " "
+                          << std::setw(5) << std::fixed << std::setprecision(1) << cpu * 100.0
+                          << "%" << std::endl;
+                std::cout.flags(f); // restore state
+                print_next += print_interval;
             }
         }
     }
 
-    int64_t get_last_seq() const { return _last_seq; }
+    int64_t get_last_seq() const
+    {
+        return _last_seq;
+    }
 
 private:
     int _matched;
@@ -146,11 +165,9 @@ int main(int argc, char *argv[])
 
     eprosima::Log::setVerbosity(eprosima::VERB_ERROR);
 
-    // zero time is next one-second boundary that is least 0.1 sec away
-    zero_ns = clock_gettime_ns(CLOCK_MONOTONIC) + 1100000000; // 1.1 sec from now
-    zero_ns = zero_ns - (zero_ns % 1000000000); // round down (shaves off up to 1 second)
-    print_interval_ns = config.print_s * 1000000000ULL;
-    print_next_ns = zero_ns;
+    print_interval = std::chrono::steady_clock::duration(std::chrono::seconds(config.print_s));
+    time_zero = std::chrono::steady_clock::now();
+    print_next = time_zero;
 
     msg_count = config.count;
 

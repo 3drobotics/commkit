@@ -5,6 +5,11 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <chrono>
+#include <iomanip>
+#include <iostream>
+#include <thread>
+
 #include <fastrtps/Domain.h>
 #include <fastrtps/TopicDataType.h>
 #include <fastrtps/qos/QosPolicies.h>
@@ -13,8 +18,6 @@
 #include <fastrtps/publisher/Publisher.h>
 #include <fastrtps/log/Log.h>
 
-#include "time_util.h"
-
 #include "topic_data.h"
 #include "test_config.h"
 #include "resources.h"
@@ -22,6 +25,11 @@
 using namespace eprosima::fastrtps;
 
 static const char *prog = "test_pub_fastrtps";
+
+inline double toDouble(std::chrono::steady_clock::duration d)
+{
+    return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
+}
 
 class TestTopicDataType : public TopicDataType
 {
@@ -135,47 +143,40 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    // zero time is next one-second boundary that is least 0.1 sec away
-    // 1.1 sec from now
-    uint64_t zero_ns = clock_gettime_ns(CLOCK_MONOTONIC) + 1100000000ULL;
-    // round down (shaves up to 1 second)
-    zero_ns = zero_ns - (zero_ns % 1000000000ULL);
+    std::chrono::steady_clock::time_point time_zero = std::chrono::steady_clock::now();
 
-    uint64_t pub_interval_ns = 1000000000ULL / config.rate;
-    uint64_t pub_next_ns = zero_ns;
+    std::chrono::steady_clock::time_point pub_next = time_zero;
+    std::chrono::steady_clock::duration pub_interval =
+        std::chrono::steady_clock::duration(std::chrono::nanoseconds(1000000000ull / config.rate));
 
-    uint64_t print_interval_ns = config.print_s * 1000000000ULL;
-    uint64_t print_next_ns = zero_ns;
+    std::chrono::steady_clock::time_point print_next = time_zero;
+    std::chrono::steady_clock::duration print_interval =
+        std::chrono::steady_clock::duration(std::chrono::seconds(config.print_s));
 
     uint32_t sequence = 0;
 
     while (config.count != 0) {
 
-        uint64_t now_ns = clock_gettime_ns(CLOCK_MONOTONIC);
-        uint32_t delay_us = 0;
-        if (pub_next_ns > now_ns) {
-            delay_us = (pub_next_ns - now_ns) / 1000;
-        }
-        usleep(delay_us);
-
-        // time at this moment is intended to be pub_next_ns;
-        // base calculations on that for consistency
+        std::this_thread::sleep_until(pub_next);
 
         TopicData topic_data;
         memset(&topic_data, 0, sizeof(TopicData));
         pub->write((void *)&topic_data);
 
-        if (pub_next_ns >= print_next_ns) {
+        if (pub_next >= print_next) {
             resources.sample();
             double cpu = resources.cpu_load();
-            uint64_t msec = (pub_next_ns - zero_ns + 500000) / 1000000;
-            printf("%-18s %6u.%03u: %6u %5.1f%%\n", prog, (unsigned)(msec / 1000),
-                   (unsigned)(msec % 1000), sequence, cpu * 100);
-            print_next_ns += print_interval_ns;
+            std::ios::fmtflags f(std::cout.flags()); // save state
+            std::cout << std::setw(18) << std::left << prog << std::right << " " << std::setw(10)
+                      << std::fixed << std::setprecision(3) << toDouble(pub_next - time_zero)
+                      << ": " << std::setw(6) << sequence << " " << std::setw(5) << std::fixed
+                      << std::setprecision(1) << cpu * 100.0 << "%" << std::endl;
+            std::cout.flags(f); // restore state
+            print_next += print_interval;
         }
 
         sequence++;
-        pub_next_ns += pub_interval_ns;
+        pub_next += pub_interval;
 
         if (config.count > 0)
             config.count--;
