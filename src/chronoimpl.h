@@ -98,4 +98,13 @@ inline eprosima::fastrtps::rtps::Time_t toRtpsTime(const clock::time_point &tp)
     return toRtpsTime(nsec);
 }
 
+// Convert std::chrono::duration to RTPS Duration_t
+// Other std::chrono units can be passed directly as 'd', and will be implicitly converted.
+// ie, toRtpsDuration(std::chrono::milliseconds(500)) is fine.
+inline eprosima::fastrtps::rtps::Duration_t toRtpsDuration(std::chrono::nanoseconds d)
+{
+    // Duration_t is a typedef of Time_t, static_cast in case that somehow changes
+    return static_cast<eprosima::fastrtps::rtps::Duration_t>(toRtpsTime(d.count()));
+}
+
 } // namespace commkit

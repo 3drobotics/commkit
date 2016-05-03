@@ -191,3 +191,28 @@ TEST(ChronoimplTest, Lossy)
         hist[0] = hist[1] = hist[2] = 0;
     }
 }
+
+TEST(ChronoimplTest, Duration)
+{
+    Duration_t d;
+
+    d = commkit::toRtpsDuration(std::chrono::milliseconds(1));
+    EXPECT_EQ(d.seconds, 0);
+    EXPECT_EQ(d.fraction, (uint64_t(1) << 32) / 1000);
+
+    d = commkit::toRtpsDuration(std::chrono::milliseconds(1000));
+    EXPECT_EQ(d.seconds, 1);
+    EXPECT_EQ(d.fraction, 0);
+
+    d = commkit::toRtpsDuration(std::chrono::microseconds(52));
+    EXPECT_EQ(d.seconds, 0);
+    EXPECT_EQ(d.fraction, (uint64_t(1) << 32) * 52 / 1000000);
+
+    d = commkit::toRtpsDuration(std::chrono::nanoseconds(17));
+    EXPECT_EQ(d.seconds, 0);
+    EXPECT_EQ(d.fraction, (uint64_t(1) << 32) *17 / 1000000000);
+
+    d = commkit::toRtpsDuration(std::chrono::minutes(2));
+    EXPECT_EQ(d.seconds, 120);
+    EXPECT_EQ(d.fraction, 0);
+}
