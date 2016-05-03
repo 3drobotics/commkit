@@ -163,9 +163,6 @@ int main(int argc, char *argv[])
 
         TopicData topic_data;
         memset(&topic_data, 0, sizeof(TopicData));
-        topic_data.timestamp_ns = pub_next_ns;
-        topic_data.sequence = sequence;
-
         pub->write((void *)&topic_data);
 
         if (pub_next_ns >= print_next_ns) {

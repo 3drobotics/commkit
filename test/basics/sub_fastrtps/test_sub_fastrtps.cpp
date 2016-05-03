@@ -77,7 +77,7 @@ public:
 class TestSubscriberListener : public SubscriberListener
 {
 public:
-    TestSubscriberListener() : _matched(0), _last_seq(UINT32_MAX)
+    TestSubscriberListener() : _matched(0), _last_seq(INT64_MAX)
     {
     }
 
@@ -106,9 +106,9 @@ public:
             }
 
             // look for and print gaps in sequence number
-            uint32_t sequence = topic_data.sequence;
-            if (_last_seq != UINT32_MAX && (sequence - _last_seq) > 1) {
-                printf("gap: %u %50c\n", sequence - _last_seq - 1, ' ');
+            int64_t sequence = toInt64(sample_info.sample_identity.sequence_number());
+            if (_last_seq != INT64_MAX && (sequence - _last_seq) > 1) {
+                printf("gap: %u\n", unsigned(sequence - _last_seq - 1));
             }
             _last_seq = sequence;
 
@@ -124,9 +124,11 @@ public:
         }
     }
 
+    int64_t get_last_seq() const { return _last_seq; }
+
 private:
     int _matched;
-    uint32_t _last_seq;
+    int64_t _last_seq;
 };
 
 static TestTopicDataType topic_data_type;
