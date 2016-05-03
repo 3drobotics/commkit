@@ -211,8 +211,22 @@ int main(int argc, char *argv[])
 
     printf("ready\n");
 
+    int64_t last_seq_save = INT64_MAX;
+    auto seq_change = std::chrono::steady_clock::now();
     while (msg_count != 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        auto now = std::chrono::steady_clock::now();
+        int64_t seq = test_subscriber_listener.get_last_seq();
+        if (last_seq_save != seq) {
+            last_seq_save = seq;
+            seq_change = now;
+        } else if ((now - seq_change) > std::chrono::seconds(2)) {
+            // this print is the point of last_seq_save etc.
+            cout << "sequence " << seq << " not changing" << endl;
+            seq_change = now;
+        } else {
+            // seq did not change, but not printing yet
+        }
     }
 
     Domain::removeSubscriber(sub);
