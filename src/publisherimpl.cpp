@@ -1,5 +1,6 @@
 #include "publisherimpl.h"
 #include "nodeimpl.h"
+#include "chronoimpl.h"
 #include "bytebuftopic.h"
 
 #include <cassert>
@@ -39,8 +40,7 @@ bool PublisherImpl::init(const PublicationOpts &opts)
     pa.topic.topicDataType = datatype();
     pa.topic.topicKind = NO_KEY;
     pa.topic.topicName = name();
-    pa.times.heartbeatPeriod.seconds = 0;
-    pa.times.heartbeatPeriod.fraction = 4294967 * 100; // ~100 millis
+    pa.times.heartbeatPeriod = toRtpsDuration(std::chrono::milliseconds(100));
     // XXX: configure history
 
     if (opts.reliable) {

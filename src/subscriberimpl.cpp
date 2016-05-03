@@ -43,8 +43,7 @@ bool SubscriberImpl::init(const SubscriptionOpts &opts)
     sa.topic.topicKind = NO_KEY;
     sa.topic.topicName = name();
     sa.topic.topicDataType = datatype();
-    sa.times.heartbeatResponseDelay.seconds = 0;
-    sa.times.heartbeatResponseDelay.fraction = 4294967 * 50; // ~50 millis;
+    sa.times.heartbeatResponseDelay = toRtpsDuration(std::chrono::milliseconds(50));
 
     if (opts.reliable) {
         sa.qos.m_reliability.kind = eprosima::fastrtps::RELIABLE_RELIABILITY_QOS;
