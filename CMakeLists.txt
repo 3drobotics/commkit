@@ -27,6 +27,7 @@ set(COMMKIT_SRCS
     src/nodeimpl.cpp
     src/publisher.cpp
     src/publisherimpl.cpp
+    src/rtpsimpl.cpp
     src/subscriber.cpp
     src/subscriberimpl.cpp
     src/topic.cpp
