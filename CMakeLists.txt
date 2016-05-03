@@ -82,6 +82,7 @@ include(cmake/fmt.cmake)
 if(BUILD_TESTING)
     include(cmake/gtest.cmake)
     add_subdirectory(test/unit)
+    add_subdirectory(test/basics)
 endif()
 
 if(BUILD_CAPNP)

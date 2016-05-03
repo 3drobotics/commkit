@@ -14,7 +14,6 @@
 #include <fastrtps/log/Log.h>
 
 #include "time_util.h"
-#include "wire_util.h"
 
 #include "topic_data.h"
 #include "test_config.h"
