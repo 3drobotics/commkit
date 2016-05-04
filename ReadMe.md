@@ -2,10 +2,15 @@
 # commkit
 
 [![Build Status](https://travis-ci.com/3drobotics/commkit.svg?token=mTutn7HE1YdXxSJUA6Ds&branch=master)](https://travis-ci.com/3drobotics/commkit)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 pub/sub middleware layer for an in-development 3DR SDK
 
-### deps
+## license
+
+Licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+## deps
 
 * cmake: `brew install cmake` on OS X, or `apt-get install cmake`
 * fast-rtps: https://github.com/eProsima/Fast-RTPS (this must be built and installed somewhere on your system)
@@ -30,10 +35,6 @@ unit testing is supported via [googletest](https://github.com/google/googletest/
 You can specify a subset of the tests to run with the options described [here](https://github.com/google/googletest/blob/master/googletest/docs/AdvancedGuide.md#running-a-subset-of-the-tests). For instance, `./test/unit/commkit-tests --gtest_filter=BasicsTest.*` runs just the tests in the BasicsTest case.
 
 to disable testing at build time, invoke cmake with `-DBUILD_TESTING=OFF`.
-
-## releasing
-
-Travis is configured to create a release whenever a new tag is added to the repo - results of the build are uploaded to the [releases page](https://github.com/3drobotics/redrider/releases). Tag names should be in the form `vN.N.N`.
 
 ### notes
 
