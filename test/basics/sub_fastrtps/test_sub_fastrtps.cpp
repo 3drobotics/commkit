@@ -1,7 +1,6 @@
 #include <errno.h>
 #include <getopt.h>
 #include <poll.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -25,28 +24,27 @@
 #include <fastrtps/subscriber/SampleInfo.h>
 #include <fastrtps/log/Log.h>
 
-#include "topic_data.h"
-#include "test_config.h"
 #include "resources.h"
+#include "simple_stats.h"
+#include "test_config.h"
+#include "time_rtps.h"
+#include "topic_data.h"
 
 using namespace eprosima::fastrtps;
 
 static const char *prog = "test_sub_fastrtps";
 
-static std::chrono::steady_clock::time_point time_zero;
-static std::chrono::steady_clock::time_point print_next;
-static std::chrono::steady_clock::duration print_interval;
+static test_clock::time_point timeZero;
+static test_clock::time_point printNext;
+static test_clock::duration printInterval;
 
-static volatile int msg_count = -1;
+static volatile int msgCount = -1;
 
 static Resources resources;
 
-inline double toDouble(std::chrono::steady_clock::duration d)
-{
-    return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
-}
+static SimpleStats<std::int64_t> latency_stats;
 
-inline int64_t toInt64(SequenceNumber_t s)
+inline int64_t toInt64(const SequenceNumber_t &s)
 {
     return (int64_t(s.high) << 32) | s.low;
 }
@@ -89,7 +87,7 @@ public:
 class TestSubscriberListener : public SubscriberListener
 {
 public:
-    TestSubscriberListener() : _matched(0), _last_seq(INT64_MAX)
+    TestSubscriberListener() : _matched(0), _lastSeq(INT64_MAX)
     {
     }
 
@@ -97,66 +95,83 @@ public:
     {
         if (info.status == MATCHED_MATCHING) {
             _matched++;
-            printf("matched\n");
+            std::cout << "matched" << std::endl;
         } else {
             _matched--;
-            printf("unmatched\n");
+            std::cout << "unmatched" << std::endl;
         }
     }
 
     void onNewDataMessage(Subscriber *sub)
     {
-        TopicData topic_data;
-        SampleInfo_t sample_info;
-        while (msg_count != 0 && sub->takeNextData((void *)&topic_data, &sample_info)) {
+        TopicData topicData;
+        SampleInfo_t sampleInfo;
+        while (msgCount != 0 && sub->takeNextData((void *)&topicData, &sampleInfo)) {
 
-            if (msg_count > 0)
-                msg_count--;
+            test_clock::time_point now = test_clock::now();
 
-            if (sample_info.sampleKind != ALIVE) {
+            if (msgCount > 0)
+                msgCount--;
+
+            if (sampleInfo.sampleKind != ALIVE) {
                 continue;
             }
 
             // look for and print gaps in sequence number
-            int64_t sequence = toInt64(sample_info.sample_identity.sequence_number());
-            if (_last_seq != INT64_MAX && (sequence - _last_seq) > 1) {
-                printf("gap: %u\n", unsigned(sequence - _last_seq - 1));
+            int64_t sequence = toInt64(sampleInfo.sample_identity.sequence_number());
+            if (_lastSeq != INT64_MAX && (sequence - _lastSeq) > 1) {
+                std::cout << "gap: " << unsigned(sequence - _lastSeq - 1) << std::endl;
             }
-            _last_seq = sequence;
+            _lastSeq = sequence;
 
-            std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-            if (now >= print_next) {
+            // look for and print long latencies
+            test_clock::duration latency = now - toTimePoint(sampleInfo.sourceTimestamp);
+            latency_stats.accumulate(toInt64(latency));
+            if (latency > std::chrono::milliseconds(100)) {
+                std::chrono::milliseconds msec =
+                    std::chrono::duration_cast<std::chrono::milliseconds>(latency);
+                std::cout << unsigned(sequence) << " delayed " << msec.count() << " msec"
+                          << std::endl;
+            }
+
+            if (now >= printNext) {
                 resources.sample();
                 double cpu = resources.cpu_load();
                 std::ios::fmtflags f(std::cout.flags()); // save state
                 std::cout << std::setw(18) << std::left << prog << std::right << " "
                           << std::setw(10) << std::fixed << std::setprecision(3)
-                          << toDouble(now - time_zero) << ": " << std::setw(6) << sequence << " "
-                          << std::setw(5) << std::fixed << std::setprecision(1) << cpu * 100.0
-                          << "%" << std::endl;
+                          << toDouble(now - timeZero) << ": " << std::setw(6) << sequence << " "
+                          // min max avg in milliseconds
+                          << std::setw(6) << std::fixed << std::setprecision(2)
+                          << latency_stats.min() / 1000000.0 << " " << std::setw(6) << std::fixed
+                          << std::setprecision(2) << latency_stats.max() / 1000000.0 << " "
+                          << std::setw(6) << std::fixed << std::setprecision(2)
+                          << latency_stats.average() / 1000000.0 << " " << std::setw(5)
+                          << std::fixed << std::setprecision(1) << cpu * 100.0 << "%" << std::endl;
                 std::cout.flags(f); // restore state
-                print_next += print_interval;
+                latency_stats.reset();
+                printNext += printInterval;
             }
         }
     }
 
-    int64_t get_last_seq() const
+    int64_t getLastSeq() const
     {
-        return _last_seq;
+        return _lastSeq;
     }
 
 private:
     int _matched;
-    int64_t _last_seq;
+    int64_t _lastSeq;
 };
 
-static TestTopicDataType topic_data_type;
+static TestTopicDataType topicDataType;
 
-static TestSubscriberListener test_subscriber_listener;
+static TestSubscriberListener testSubscriberListener;
 
 int main(int argc, char *argv[])
 {
-    printf("built %s %s\n", __DATE__, __TIME__);
+    std::cout << "built " << __DATE__ << " " << __TIME__ << std::endl;
 
     TestConfig::Config config;
     if (!TestConfig::parse_args(argc, argv, config)) {
@@ -165,65 +180,63 @@ int main(int argc, char *argv[])
 
     eprosima::Log::setVerbosity(eprosima::VERB_ERROR);
 
-    print_interval = std::chrono::steady_clock::duration(std::chrono::seconds(config.print_s));
-    time_zero = std::chrono::steady_clock::now();
-    print_next = time_zero;
+    printInterval = test_clock::duration(std::chrono::seconds(config.print_s));
+    timeZero = test_clock::now();
+    printNext = timeZero;
 
-    msg_count = config.count;
+    msgCount = config.count;
 
-    printf("create participant\n");
-    ParticipantAttributes part_attr;
-    part_attr.rtps.builtin.use_SIMPLE_RTPSParticipantDiscoveryProtocol = true;
-    part_attr.rtps.builtin.use_SIMPLE_EndpointDiscoveryProtocol = true;
-    part_attr.rtps.builtin.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
-    part_attr.rtps.builtin.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
-    part_attr.rtps.builtin.domainId = 80;
-    part_attr.rtps.builtin.leaseDuration = c_TimeInfinite;
-    part_attr.rtps.sendSocketBufferSize = 8712;
-    part_attr.rtps.listenSocketBufferSize = 17424;
-    part_attr.rtps.setName(prog);
-    Participant *part = Domain::createParticipant(part_attr);
+    std::cout << "create participant" << std::endl;
+    ParticipantAttributes partAttr;
+    partAttr.rtps.builtin.use_SIMPLE_RTPSParticipantDiscoveryProtocol = true;
+    partAttr.rtps.builtin.use_SIMPLE_EndpointDiscoveryProtocol = true;
+    partAttr.rtps.builtin.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
+    partAttr.rtps.builtin.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
+    partAttr.rtps.builtin.domainId = 80;
+    partAttr.rtps.builtin.leaseDuration = toTime(config.lease_s);
+    partAttr.rtps.builtin.leaseDuration_announcementperiod = toTime(config.renew_s);
+    partAttr.rtps.setName(prog);
+    Participant *part = Domain::createParticipant(partAttr);
     if (part == nullptr) {
-        printf("error\n");
+        std::cerr << "error" << std::endl;
         exit(1);
     }
 
-    Domain::registerType(part, &topic_data_type);
+    Domain::registerType(part, &topicDataType);
 
-    printf("create subscriber\n");
-    SubscriberAttributes sub_attr;
-    sub_attr.topic.topicKind = NO_KEY;
-    sub_attr.topic.topicName = TopicData::topic_name;
-    sub_attr.topic.topicDataType = TopicData::topic_type;
-    sub_attr.times.heartbeatResponseDelay.seconds = 0;
-    sub_attr.times.heartbeatResponseDelay.fraction = 4294967 * 50; // ~50 millis;
-    sub_attr.topic.historyQos.kind = KEEP_LAST_HISTORY_QOS;
-    sub_attr.topic.historyQos.depth = config.history;
-    sub_attr.topic.resourceLimitsQos.max_samples = 2 * config.history;
-    sub_attr.topic.resourceLimitsQos.allocated_samples = 2 * config.history;
-    sub_attr.qos.m_reliability.kind =
+    std::cout << "create subscriber" << std::endl;
+    SubscriberAttributes subAttr;
+    subAttr.topic.topicKind = NO_KEY;
+    subAttr.topic.topicName = TopicData::topic_name;
+    subAttr.topic.topicDataType = TopicData::topic_type;
+    subAttr.times.heartbeatResponseDelay = toTime(0.050);
+    subAttr.topic.historyQos.kind = KEEP_LAST_HISTORY_QOS;
+    subAttr.topic.historyQos.depth = config.history;
+    subAttr.topic.resourceLimitsQos.max_samples = 2 * config.history;
+    subAttr.topic.resourceLimitsQos.allocated_samples = 2 * config.history;
+    subAttr.qos.m_reliability.kind =
         config.reliable ? RELIABLE_RELIABILITY_QOS : BEST_EFFORT_RELIABILITY_QOS;
-    Subscriber *sub = Domain::createSubscriber(part, sub_attr, &test_subscriber_listener);
+    Subscriber *sub = Domain::createSubscriber(part, subAttr, &testSubscriberListener);
     if (sub == nullptr) {
-        printf("error\n");
+        std::cerr << "error" << std::endl;
         exit(1);
     }
 
-    printf("ready\n");
+    std::cout << "ready" << std::endl;
 
-    int64_t last_seq_save = INT64_MAX;
-    auto seq_change = std::chrono::steady_clock::now();
-    while (msg_count != 0) {
+    int64_t lastSeqSave = INT64_MAX;
+    auto seqChange = test_clock::now();
+    while (msgCount != 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        auto now = std::chrono::steady_clock::now();
-        int64_t seq = test_subscriber_listener.get_last_seq();
-        if (last_seq_save != seq) {
-            last_seq_save = seq;
-            seq_change = now;
-        } else if ((now - seq_change) > std::chrono::seconds(2)) {
-            // this print is the point of last_seq_save etc.
+        auto now = test_clock::now();
+        int64_t seq = testSubscriberListener.getLastSeq();
+        if (lastSeqSave != seq) {
+            lastSeqSave = seq;
+            seqChange = now;
+        } else if ((now - seqChange) > std::chrono::seconds(2)) {
+            // this print is the point of lastSeqSave etc.
             cout << "sequence " << seq << " not changing" << endl;
-            seq_change = now;
+            seqChange = now;
         } else {
             // seq did not change, but not printing yet
         }
