@@ -1,6 +1,7 @@
 
 #include <cstdint>
 #include <iostream>
+#include <set>
 #include <thread>
 
 #include <gtest/gtest.h>
@@ -14,6 +15,10 @@
 #include "topic_data.h"
 
 constexpr int domainId = 80;
+
+// default is 65536; smaller causes drops at the socket layer when
+// packets are sent very fast, exercising the reliable protocol
+constexpr int socketBufSize = 8192;
 
 Resources resources;
 
@@ -90,21 +95,52 @@ public:
     {
         test_clock::duration pollInterval = std::chrono::milliseconds(1);
         while (true) {
-            if (subscriber == nullptr)
-                return false;
-            else if (subscriber->takeNextData(&data, &info))
+            if (subscriber == nullptr) {
+                return false; // subscriber deleted?
+            } else if (subscriber->takeNextData(&data, &info)) {
+                int64_t seq = toInt64(info.sample_identity.sequence_number());
+                sequenceNumbersSeen.insert(seq);
                 return true;
-            else if (timeout <= test_clock::duration(0))
-                return false;
+            } else if (timeout <= test_clock::duration(0)) {
+                return false; // timeout
+            }
             std::this_thread::sleep_for(pollInterval);
             timeout -= pollInterval;
         }
+    }
+    void showSequenceNumbersSeen() const
+    {
+        cout << "sequence numbers seen: ";
+        if (sequenceNumbersSeen.empty()) {
+            cout << "none" << endl;
+            return;
+        }
+        auto i = sequenceNumbersSeen.begin();
+        int64_t s1 = *i;
+        int64_t s2;
+        cout << s1;
+        int64_t seqLast = s1;
+        i++;
+        for (; i != sequenceNumbersSeen.end(); i++) {
+            s2 = *i;
+            if (s2 != (s1 + 1)) {
+                if (s1 != seqLast)
+                    cout << '-' << s1;
+                cout << ' ' << s2;
+                seqLast = s2;
+            }
+            s1 = s2;
+        }
+        if (s1 != seqLast)
+            cout << '-' << s1;
+        cout << endl;
     }
     static constexpr int64_t SEQ_UNSET = INT64_MAX;
     Subscriber *subscriber;
     int matched;
     int64_t lastSeq;
     int received;
+    std::set<int64_t> sequenceNumbersSeen;
 };
 
 TEST(Test, History)
@@ -114,7 +150,7 @@ TEST(Test, History)
      * ensure we can send a message between them.
      */
 
-    eprosima::Log::setVerbosity(eprosima::VERB_ERROR);
+    // eprosima::Log::setVerbosity(eprosima::VERB_ERROR);
 
     // histSmall is a history depth we can overflow quickly
     // histLarge is a history that we don't expect to overflow
@@ -137,6 +173,8 @@ TEST(Test, History)
                 pubPartAttr.rtps.builtin.m_simpleEDP.use_PublicationWriterANDSubscriptionReader =
                     true;
                 pubPartAttr.rtps.builtin.domainId = domainId;
+                pubPartAttr.rtps.sendSocketBufferSize = socketBufSize;
+                pubPartAttr.rtps.listenSocketBufferSize = socketBufSize;
                 pubPartAttr.rtps.setName("TestPublisher");
                 Participant *pubPart = Domain::createParticipant(pubPartAttr);
                 ASSERT_NE(pubPart, nullptr);
@@ -176,6 +214,8 @@ TEST(Test, History)
                 subPartAttr.rtps.builtin.m_simpleEDP.use_PublicationWriterANDSubscriptionReader =
                     true;
                 subPartAttr.rtps.builtin.domainId = domainId;
+                subPartAttr.rtps.sendSocketBufferSize = socketBufSize;
+                subPartAttr.rtps.listenSocketBufferSize = socketBufSize;
                 subPartAttr.rtps.setName("TestSubscriber");
                 Participant *subPart = Domain::createParticipant(subPartAttr);
                 ASSERT_NE(subPart, nullptr);
@@ -212,12 +252,24 @@ TEST(Test, History)
                 // typical here is "matched in 2 msec" (occasionally 1 msec)
                 // std::cout << "matched in " << matchLoops << " msec" << std::endl;
 
-                // 500 msgs at 500/sec, evenly spaced, should not miss any
-                int msgCount = 500;
-                test_clock::duration msgInterval = std::chrono::milliseconds(1);
+                // Fast-RTPS might have a bug where if it generates a sequence
+                // number set that spans more than 256 sequence numbers, it
+                // fails an assert instead of doing whatever RTPS says it
+                // should do. With the small socket buffers, about 100 messages
+                // is enough to (usually) trigger resends on reliable streams.
+                // With release builds and msgCount=100, the acknack asks for
+                // ~40..50 to be resent. This shouldn't be more than 255 in
+                // order to avoid the assert.
+                int msgCount = 250;
+
                 // subTimeout should be long enough for pub to send another heartbeat
                 // and sub to request more messages
                 test_clock::duration subTimeout = std::chrono::milliseconds(200);
+
+                // evenly spaced, should not miss any
+                // cout << "smooth..." << endl;
+                subList.sequenceNumbersSeen.clear();
+                test_clock::duration msgInterval = std::chrono::milliseconds(1);
                 test_clock::time_point msgTime = test_clock::now();
                 msgTime += msgInterval;
                 for (int i = 0; i < msgCount; i++) {
@@ -231,6 +283,7 @@ TEST(Test, History)
                 }
 
                 // burst-send to overrun history - might drop some, but should recover
+                // cout << "bursty..." << endl;
                 int pubCount = 0;
                 for (int i = 0; i < msgCount; i++) {
                     TopicData pubData;
@@ -240,11 +293,10 @@ TEST(Test, History)
                 // should always have sent them all
                 EXPECT_GE(pubCount, msgCount);
                 // std::cout << "pubCount=" << pubCount << std::endl;
-                // let any transfers finish
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 // see what subscriber got
-                // note: is it possible that once we start pulling messages
-                // from the subscriber, it might ask the publisher for more?
+                // XXX is it possible that once we start pulling messages from
+                // the subscriber, it might ask the publisher for more?
+                subList.sequenceNumbersSeen.clear();
                 int subCount = 0;
                 TopicData subData;
                 SampleInfo_t sampleInfo;
@@ -253,22 +305,14 @@ TEST(Test, History)
                 }
                 // should always have received some
                 EXPECT_GT(subCount, 0);
-                // how many depends on qos and history depth
-                // XXX I don't know exactly how many we should be getting.
-                // The test at this point just makes sure we got _some_;
-                // that the system continues working in the fact of overruns.
+                // How many depends on qos and history depth. The test
+                // at this point just makes sure we got _some_; that the
+                // system continues working in the face of overruns.
                 // std::cout << "subCount=" << subCount << std::endl;
-                ASSERT_TRUE(qos == BEST_EFFORT_RELIABILITY_QOS || qos == RELIABLE_RELIABILITY_QOS);
-                if (msgCount < subHist && msgCount < pubHist) {
+                // subList.showSequenceNumbersSeen();
+                if (qos == RELIABLE_RELIABILITY_QOS && msgCount < subHist && msgCount < pubHist) {
                     // no excuse for not getting them all
                     EXPECT_EQ(subCount, msgCount);
-                } else {
-                    // let's say we should get at least the lesser of
-                    // pubHist-1 and subHist-1
-                    int expected = subHist - 1;
-                    if (expected > pubHist - 1)
-                        expected = pubHist - 1;
-                    EXPECT_GE(subCount, expected);
                 }
 
                 // delete subscriber
@@ -280,8 +324,6 @@ TEST(Test, History)
                 ASSERT_TRUE(Domain::removePublisher(pub));
                 // delete publisher participant
                 ASSERT_TRUE(Domain::removeParticipant(pubPart));
-
-                // std::this_thread::sleep_for(std::chrono::seconds(1));
 
             } // for (subHist...)
         }     // for (pubHist...)
