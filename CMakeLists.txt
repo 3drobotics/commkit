@@ -84,6 +84,7 @@ if(BUILD_TESTING)
     include(cmake/gtest.cmake)
     add_subdirectory(test/unit)
     add_subdirectory(test/basics)
+    add_subdirectory(test/unit_fastrtps)
 endif()
 
 if(BUILD_CAPNP)
