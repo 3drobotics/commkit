@@ -56,8 +56,7 @@ struct COMMKIT_API Payload {
     }
 
 #ifndef COMMKIT_NO_CAPNP
-    template <typename T>
-    typename T::Reader toReader(bool *ok = nullptr)
+    capnp::FlatArrayMessageReader toReader(bool *ok = nullptr)
     {
         /*
          * Use FlatArrayMessageReader since that's what Publisher uses for now.
@@ -72,13 +71,13 @@ struct COMMKIT_API Payload {
             }
             auto wb =
                 kj::ArrayPtr<const word>(reinterpret_cast<const word *>(bytes), len / sizeof(word));
-            return capnp::FlatArrayMessageReader(wb).getRoot<T>();
+            return capnp::FlatArrayMessageReader(wb);
         }
 
         if (ok) {
             *ok = false;
         }
-        return typename T::Reader();
+        return capnp::FlatArrayMessageReader(kj::ArrayPtr<const word>(nullptr, (size_t)0));
     }
 #endif // COMMKIT_NO_CAPNP
 };
