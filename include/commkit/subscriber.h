@@ -56,30 +56,7 @@ struct COMMKIT_API Payload {
     }
 
 #ifndef COMMKIT_NO_CAPNP
-    template <typename T>
-    typename T::Reader toReader(bool *ok = nullptr)
-    {
-        /*
-         * Use FlatArrayMessageReader since that's what Publisher uses for now.
-         * Ultimately want a strategy that involves less copying.
-         */
-
-        using capnp::word;
-
-        if (len % sizeof(word) == 0) {
-            if (ok) {
-                *ok = true;
-            }
-            auto wb =
-                kj::ArrayPtr<const word>(reinterpret_cast<const word *>(bytes), len / sizeof(word));
-            return capnp::FlatArrayMessageReader(wb).getRoot<T>();
-        }
-
-        if (ok) {
-            *ok = false;
-        }
-        return typename T::Reader();
-    }
+    capnp::FlatArrayMessageReader toReader(bool *ok = nullptr);
 #endif // COMMKIT_NO_CAPNP
 };
 
