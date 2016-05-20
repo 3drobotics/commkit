@@ -25,10 +25,10 @@
 
 // -----8<----- abridged copy from commkit/include/commkit/chrono.h
 
-typedef std::chrono::steady_clock test_clock;
+typedef std::chrono::steady_clock TestClock;
 
-const test_clock::duration DURATION_INVALID = test_clock::duration(-1);
-const test_clock::time_point TIME_POINT_INVALID = test_clock::time_point(DURATION_INVALID);
+const TestClock::duration DURATION_INVALID = TestClock::duration(-1);
+const TestClock::time_point TIME_POINT_INVALID = TestClock::time_point(DURATION_INVALID);
 
 // -----8<----- end copy
 
@@ -55,22 +55,22 @@ inline std::int64_t toInt64(const eprosima::fastrtps::rtps::Time_t &t)
     return nsec;
 }
 
-// Convert raw nanoseconds to test_clock::time_point
+// Convert raw nanoseconds to TestClock::time_point
 // Exact conversion
-inline test_clock::time_point toTimePoint(const std::int64_t nsec)
+inline TestClock::time_point toTimePoint(const std::int64_t nsec)
 {
     if (nsec == NSEC_INVALID)
         return TIME_POINT_INVALID;
 
     // Construct duration from int, then time_point from duration.
-    test_clock::duration dur(nsec);
-    test_clock::time_point tp(dur);
+    TestClock::duration dur(nsec);
+    TestClock::time_point tp(dur);
     return tp;
 }
 
-// Convert RTPS Time_t to test_clock::time_point
+// Convert RTPS Time_t to TestClock::time_point
 // Inexact conversion; loss of precision
-inline test_clock::time_point toTimePoint(const eprosima::fastrtps::rtps::Time_t &t)
+inline TestClock::time_point toTimePoint(const eprosima::fastrtps::rtps::Time_t &t)
 {
     if (t == eprosima::fastrtps::rtps::c_TimeInvalid)
         return TIME_POINT_INVALID;
@@ -83,9 +83,9 @@ inline test_clock::time_point toTimePoint(const eprosima::fastrtps::rtps::Time_t
 
 // other conversions (not in commkit)
 
-// test_clock::duration to raw nanoseconds
+// TestClock::duration to raw nanoseconds
 // Exact conversion
-inline int64_t toInt64(const test_clock::duration &d)
+inline int64_t toInt64(const TestClock::duration &d)
 {
     if (d == DURATION_INVALID)
         return NSEC_INVALID;
@@ -93,9 +93,9 @@ inline int64_t toInt64(const test_clock::duration &d)
     return std::chrono::duration_cast<std::chrono::nanoseconds>(d).count();
 }
 
-// test_clock::duration to double seconds
+// TestClock::duration to double seconds
 // Inexact conversion, depends on value (!); this is intended for logging.
-inline double toDouble(const test_clock::duration &d)
+inline double toDouble(const TestClock::duration &d)
 {
     return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
 }

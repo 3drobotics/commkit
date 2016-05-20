@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     printf("built %s %s\n", __DATE__, __TIME__);
 
     TestConfig::Config config;
-    if (!TestConfig::parse_args(argc, argv, config)) {
+    if (!TestConfig::parseArgs(argc, argv, config)) {
         TestConfig::usage(prog);
     }
 
@@ -63,52 +63,52 @@ int main(int argc, char *argv[])
     Resources resources;
 
     printf("create rtps participant\n");
-    RTPSParticipantAttributes part_attr;
-    part_attr.builtin.use_SIMPLE_RTPSParticipantDiscoveryProtocol = true;
-    part_attr.builtin.use_SIMPLE_EndpointDiscoveryProtocol = true;
-    part_attr.builtin.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
-    part_attr.builtin.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
-    part_attr.builtin.domainId = 80;
-    part_attr.builtin.leaseDuration = c_TimeInfinite;
-    part_attr.sendSocketBufferSize = 8712;
-    part_attr.listenSocketBufferSize = 17424;
-    part_attr.setName(prog);
-    RTPSParticipant *part = RTPSDomain::createParticipant(part_attr);
+    RTPSParticipantAttributes partAttr;
+    partAttr.builtin.use_SIMPLE_RTPSParticipantDiscoveryProtocol = true;
+    partAttr.builtin.use_SIMPLE_EndpointDiscoveryProtocol = true;
+    partAttr.builtin.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
+    partAttr.builtin.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
+    partAttr.builtin.domainId = 80;
+    partAttr.builtin.leaseDuration = c_TimeInfinite;
+    partAttr.sendSocketBufferSize = 8712;
+    partAttr.listenSocketBufferSize = 17424;
+    partAttr.setName(prog);
+    RTPSParticipant *part = RTPSDomain::createParticipant(partAttr);
     if (part == nullptr) {
         printf("error\n");
         exit(1);
     }
 
     printf("create rtps writer history\n");
-    HistoryAttributes hist_attr;
-    hist_attr.payloadMaxSize = sizeof(TopicData);
+    HistoryAttributes histAttr;
+    histAttr.payloadMaxSize = sizeof(TopicData);
     // XXX config.history
-    WriterHistory *writer_hist = new WriterHistory(hist_attr);
-    if (writer_hist == nullptr) {
+    WriterHistory *writerHist = new WriterHistory(histAttr);
+    if (writerHist == nullptr) {
         printf("error\n");
         exit(1);
     }
 
     printf("create rtps writer\n");
-    TestWriterListener writer_listener;
-    WriterAttributes writer_attr;
-    writer_attr.times.heartbeatPeriod.seconds = 0;
-    writer_attr.times.heartbeatPeriod.fraction = 4294967 * 100; // ~100 millis
-    writer_attr.endpoint.reliabilityKind = config.reliable ? RELIABLE : BEST_EFFORT;
+    TestWriterListener writerListener;
+    WriterAttributes writerAttr;
+    writerAttr.times.heartbeatPeriod.seconds = 0;
+    writerAttr.times.heartbeatPeriod.fraction = 4294967 * 100; // ~100 millis
+    writerAttr.endpoint.reliabilityKind = config.reliable ? RELIABLE : BEST_EFFORT;
     RTPSWriter *writer =
-        RTPSDomain::createRTPSWriter(part, writer_attr, writer_hist, &writer_listener);
+        RTPSDomain::createRTPSWriter(part, writerAttr, writerHist, &writerListener);
     if (writer == nullptr) {
         printf("error\n");
         exit(1);
     }
 
     printf("register rtps writer\n");
-    TopicAttributes topic_attr;
-    topic_attr.topicKind = NO_KEY;
-    topic_attr.topicName = TopicData::topic_name;
-    topic_attr.topicDataType = TopicData::topic_type;
-    WriterQos writer_qos;
-    if (!part->registerWriter(writer, topic_attr, writer_qos)) {
+    TopicAttributes topicAttr;
+    topicAttr.topicKind = NO_KEY;
+    topicAttr.topicName = TopicData::topicName;
+    topicAttr.topicDataType = TopicData::topicType;
+    WriterQos writerQos;
+    if (!part->registerWriter(writer, topicAttr, writerQos)) {
         printf("error\n");
         exit(1);
     }
@@ -119,48 +119,48 @@ int main(int argc, char *argv[])
     // round down (shaves off up to 1 second)
     zero_ns = zero_ns - (zero_ns % 1000000000ULL);
 
-    uint64_t pub_interval_ns = 1000000000ULL / config.rate;
-    uint64_t pub_next_ns = zero_ns;
+    uint64_t pubInterval_ns = 1000000000ULL / config.rate;
+    uint64_t pubNext_ns = zero_ns;
 
-    uint64_t print_interval_ns = config.print_s * 1000000000ULL;
-    uint64_t print_next_ns = zero_ns;
+    uint64_t printInterval_ns = config.print_s * 1000000000ULL;
+    uint64_t printNext_ns = zero_ns;
 
     uint32_t sequence = 0;
 
     while (true) {
-        // sleep until pub_next_ns
+        // sleep until pubNext_ns
         uint64_t now_ns = clock_gettime_ns(CLOCK_MONOTONIC);
         uint32_t delay_us = 0;
-        if (pub_next_ns > now_ns) {
-            delay_us = (pub_next_ns - now_ns) / 1000;
+        if (pubNext_ns > now_ns) {
+            delay_us = (pubNext_ns - now_ns) / 1000;
         }
         usleep(delay_us);
 
-        // time at this moment is intended to be pub_next_ns;
+        // time at this moment is intended to be pubNext_ns;
         // base calculations on that for consistency
 
-        CacheChange_t *cache_change = writer->new_change(ALIVE);
+        CacheChange_t *cacheChange = writer->new_change(ALIVE);
 
-        TopicData topic_data;
-        memset(&topic_data, 0, sizeof(TopicData));
-        topic_data.timestamp_ns = pub_next_ns;
-        topic_data.sequence = sequence;
-        memcpy(cache_change->serializedPayload.data, &topic_data, sizeof(TopicData));
-        cache_change->serializedPayload.length = sizeof(TopicData);
+        TopicData topicData;
+        memset(&topicData, 0, sizeof(TopicData));
+        topicData.timestamp_ns = pubNext_ns;
+        topicData.sequence = sequence;
+        memcpy(cacheChange->serializedPayload.data, &topicData, sizeof(TopicData));
+        cacheChange->serializedPayload.length = sizeof(TopicData);
 
-        writer_hist->add_change(cache_change);
+        writerHist->add_change(cacheChange);
 
-        if (pub_next_ns >= print_next_ns) {
+        if (pubNext_ns >= printNext_ns) {
             resources.sample();
-            double cpu = resources.cpu_load();
-            uint64_t msec = (pub_next_ns - zero_ns + 500000) / 1000000;
+            double cpu = resources.cpuLoad();
+            uint64_t msec = (pubNext_ns - zero_ns + 500000) / 1000000;
             printf("%-18s %6u.%03u: %6u %5.1f%%\n", prog, (unsigned)(msec / 1000),
                    (unsigned)(msec % 1000), sequence, cpu * 100);
-            print_next_ns += print_interval_ns;
+            printNext_ns += printInterval_ns;
         }
 
         sequence++;
-        pub_next_ns += pub_interval_ns;
+        pubNext_ns += pubInterval_ns;
     }
 
     // XXX unregister writer?
@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
     }
 
     printf("delete rtps writer history\n");
-    delete writer_hist;
+    delete writerHist;
 
     printf("delete rtps participant\n");
     if (!RTPSDomain::removeRTPSParticipant(part)) {

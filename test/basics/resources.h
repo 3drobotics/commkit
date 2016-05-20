@@ -8,7 +8,7 @@ class Resources
 {
 
 public:
-    Resources() : _cpu_load(0), _mtime_prev(), _utime_prev(0), _stime_prev(0)
+    Resources() : _cpuLoad(0), _mtimePrev(), _utimePrev(0), _stimePrev(0)
     {
         sample();
     }
@@ -20,45 +20,45 @@ public:
             return false;
         }
         std::chrono::steady_clock::time_point mtime = std::chrono::steady_clock::now();
-        std::chrono::nanoseconds utime = to_duration(r.ru_utime);
-        std::chrono::nanoseconds stime = to_duration(r.ru_stime);
+        std::chrono::nanoseconds utime = toDuration(r.ru_utime);
+        std::chrono::nanoseconds stime = toDuration(r.ru_stime);
 
-        if (mtime == _mtime_prev) {
-            _cpu_load = 1.0;
+        if (mtime == _mtimePrev) {
+            _cpuLoad = 1.0;
         } else {
-            _cpu_load = to_double((utime - _utime_prev) + (stime - _stime_prev)) /
-                        to_double(mtime - _mtime_prev);
+            _cpuLoad = toDouble((utime - _utimePrev) + (stime - _stimePrev)) /
+                        toDouble(mtime - _mtimePrev);
         }
 
-        _mtime_prev = mtime;
-        _utime_prev = utime;
-        _stime_prev = stime;
+        _mtimePrev = mtime;
+        _utimePrev = utime;
+        _stimePrev = stime;
 
         return true;
     }
 
-    double cpu_load() const
+    double cpuLoad() const
     {
-        return _cpu_load;
+        return _cpuLoad;
     }
 
 private:
-    std::chrono::nanoseconds to_duration(const struct timeval &tv)
+    std::chrono::nanoseconds toDuration(const struct timeval &tv)
     {
         return std::chrono::nanoseconds(tv.tv_sec * 1000000000ull + tv.tv_usec * 1000ull);
     }
 
-    double to_double(std::chrono::nanoseconds d)
+    double toDouble(std::chrono::nanoseconds d)
     {
         return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
     }
 
-    double _cpu_load;
+    double _cpuLoad;
 
     // time of last measurement
-    std::chrono::steady_clock::time_point _mtime_prev;
+    std::chrono::steady_clock::time_point _mtimePrev;
 
     // elapsed user and system times as of last measurement
-    std::chrono::nanoseconds _utime_prev;
-    std::chrono::nanoseconds _stime_prev;
+    std::chrono::nanoseconds _utimePrev;
+    std::chrono::nanoseconds _stimePrev;
 };

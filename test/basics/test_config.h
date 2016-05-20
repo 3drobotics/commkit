@@ -4,20 +4,20 @@ namespace TestConfig
 {
 
 // default rate, messages/second
-constexpr unsigned default_rate = 500;
+constexpr unsigned defaultRate = 500;
 
 // number of messages to send/receive before quitting (-1 = infinite)
-constexpr int default_count = -1;
+constexpr int defaultCount = -1;
 
 // default history depth, messages
-constexpr unsigned default_history = 1000;
+constexpr unsigned defaultHistory = 1000;
 
 // default print interval, seconds
-constexpr unsigned default_print_s = 1;
+constexpr unsigned defaultPrint_s = 1;
 
 // default lease and renew times (-1 means infinite/never)
-constexpr double default_lease_s = -1;
-constexpr double default_renew_s = -1;
+constexpr double defaultLease_s = -1;
+constexpr double defaultRenew_s = -1;
 
 struct Config {
     bool reliable;
@@ -28,13 +28,13 @@ struct Config {
     double lease_s;
     double renew_s;
     Config()
-        : reliable(false), rate(default_rate), count(default_count), history(default_history),
-          print_s(default_print_s), lease_s(default_lease_s), renew_s(default_renew_s)
+        : reliable(false), rate(defaultRate), count(defaultCount), history(defaultHistory),
+          print_s(defaultPrint_s), lease_s(defaultLease_s), renew_s(defaultRenew_s)
     {
     }
 };
 
-bool parse_args(int argc, char *argv[], Config &config);
+bool parseArgs(int argc, char *argv[], Config &config);
 
 void usage(const char *name);
 };

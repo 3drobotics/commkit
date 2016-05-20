@@ -22,7 +22,7 @@ public:
     {
         _count = 0;
         _sum = 0;
-        _sum_squares = 0;
+        _sumSquares = 0;
         _min = std::numeric_limits<T>::max();
         _max = std::numeric_limits<T>::min();
     }
@@ -31,7 +31,7 @@ public:
     {
         _count++;
         _sum += x;
-        _sum_squares += (x * x);
+        _sumSquares += (x * x);
         if (_min > x)
             _min = x;
         if (_max < x)
@@ -65,13 +65,13 @@ public:
         if (_count == 0)
             return 0;
         double avg = average();
-        return std::sqrt(double(_sum_squares) / double(_count) - avg * avg);
+        return std::sqrt(double(_sumSquares) / double(_count) - avg * avg);
     }
 
 private:
     unsigned _count;
     T _sum;
-    T _sum_squares;
+    T _sumSquares;
     T _min;
     T _max;
 };

@@ -26,14 +26,14 @@ using std::setw;
 
 static const char *prog = "test_sub_commkit";
 
-commkit::clock::time_point time_zero;
-commkit::clock::time_point print_next;
-commkit::clock::duration print_interval;
+commkit::clock::time_point timeZero;
+commkit::clock::time_point printNext;
+commkit::clock::duration printInterval;
 
 static Resources resources;
 
 // sequence number in last packet received
-static int64_t last_seq = commkit::SEQUENCE_NUMBER_INVALID;
+static int64_t lastSeq = commkit::SEQUENCE_NUMBER_INVALID;
 
 static void onConnect(const commkit::SubscriberPtr sub)
 {
@@ -58,14 +58,14 @@ static void onMessage(commkit::SubscriberPtr sub)
             continue;
         }
 
-        TopicData topic_data;
-        memcpy(&topic_data, payload.bytes, sizeof(TopicData));
+        TopicData topicData;
+        memcpy(&topicData, payload.bytes, sizeof(TopicData));
 
         // look for and print gaps in sequence number
-        if (last_seq != commkit::SEQUENCE_NUMBER_INVALID && (payload.sequence - last_seq) != 1) {
-            cout << "gap: " << payload.sequence - last_seq - 1 << endl;
+        if (lastSeq != commkit::SEQUENCE_NUMBER_INVALID && (payload.sequence - lastSeq) != 1) {
+            cout << "gap: " << payload.sequence - lastSeq - 1 << endl;
         }
-        last_seq = payload.sequence;
+        lastSeq = payload.sequence;
 
         // look for long latencies (assumes same system pub/sub)
         commkit::clock::duration latency = now - payload.sourceTimestamp;
@@ -73,15 +73,15 @@ static void onMessage(commkit::SubscriberPtr sub)
             cout << "latency: " << fixed << setprecision(3) << commkit::toDouble(latency) << endl;
         }
 
-        if (now >= print_next) {
+        if (now >= printNext) {
             resources.sample();
-            double cpu = resources.cpu_load();
+            double cpu = resources.cpuLoad();
             std::ios::fmtflags f(cout.flags()); // save state
             cout << setw(18) << left << prog << right << " " << setw(10) << fixed << setprecision(3)
-                 << commkit::toDouble(now - time_zero) << ": " << setw(6) << payload.sequence << " "
+                 << commkit::toDouble(now - timeZero) << ": " << setw(6) << payload.sequence << " "
                  << setw(5) << fixed << setprecision(1) << cpu * 100.0 << "%" << endl;
             cout.flags(f); // restore state
-            print_next += print_interval;
+            printNext += printInterval;
         }
     }
 }
@@ -91,15 +91,15 @@ int main(int argc, char *argv[])
     cout << "built " __DATE__ " " __TIME__ << endl;
 
     TestConfig::Config config;
-    if (!TestConfig::parse_args(argc, argv, config)) {
+    if (!TestConfig::parseArgs(argc, argv, config)) {
         TestConfig::usage(prog);
     }
 
     eprosima::Log::setVerbosity(eprosima::VERB_ERROR);
 
-    print_interval = commkit::clock::duration(std::chrono::seconds(config.print_s));
-    time_zero = commkit::clock::now();
-    print_next = time_zero;
+    printInterval = commkit::clock::duration(std::chrono::seconds(config.print_s));
+    timeZero = commkit::clock::now();
+    printNext = timeZero;
 
     cout << "create node" << endl;
     commkit::Node node;
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    commkit::Topic topic(TopicData::topic_name, TopicData::topic_type, sizeof(TopicData));
+    commkit::Topic topic(TopicData::topicName, TopicData::topicType, sizeof(TopicData));
 
     cout << "create subscriber" << endl;
     auto sub = node.createSubscriber(topic);
@@ -119,10 +119,10 @@ int main(int argc, char *argv[])
     sub->onPublisherConnected.connect(&onConnect);
     sub->onPublisherDisconnected.connect(&onDisconnect);
     sub->onMessage.connect(&onMessage);
-    commkit::SubscriptionOpts sub_opts;
-    sub_opts.reliable = config.reliable;
-    sub_opts.history = config.history;
-    if (!sub->init(sub_opts)) {
+    commkit::SubscriptionOpts subOpts;
+    subOpts.reliable = config.reliable;
+    subOpts.history = config.history;
+    if (!sub->init(subOpts)) {
         cerr << "error" << endl;
         exit(1);
     }

@@ -25,13 +25,13 @@ using namespace eprosima::fastrtps::rtps;
 static const char *prog = "test_sub_rtps";
 
 uint64_t zero_ns;
-uint64_t print_interval_ns;
-uint64_t print_next_ns;
+uint64_t printInterval_ns;
+uint64_t printNext_ns;
 
 static Resources resources;
 
 // sequence number in last packet received
-static uint32_t last_seq = UINT32_MAX;
+static uint32_t lastSeq = UINT32_MAX;
 
 class TestReaderListener : public ReaderListener
 {
@@ -66,24 +66,24 @@ public:
                    cc->serializedPayload.length);
         } else {
 
-            TopicData topic_data;
-            memcpy(&topic_data, cc->serializedPayload.data, sizeof(topic_data));
+            TopicData topicData;
+            memcpy(&topicData, cc->serializedPayload.data, sizeof(topicData));
 
             // look for and print gaps in sequence number
-            uint32_t sequence = topic_data.sequence;
-            if (last_seq != UINT32_MAX && (sequence - last_seq) > 1) {
-                printf("gap: %u %50c\n", sequence - last_seq - 1, ' ');
+            uint32_t sequence = topicData.sequence;
+            if (lastSeq != UINT32_MAX && (sequence - lastSeq) > 1) {
+                printf("gap: %u %50c\n", sequence - lastSeq - 1, ' ');
             }
-            last_seq = sequence;
+            lastSeq = sequence;
 
             uint64_t now_ns = clock_gettime_ns(CLOCK_MONOTONIC);
-            if (now_ns >= print_next_ns) {
+            if (now_ns >= printNext_ns) {
                 resources.sample();
-                double cpu = resources.cpu_load();
+                double cpu = resources.cpuLoad();
                 uint64_t msec = (now_ns - zero_ns + 500000) / 1000000;
                 printf("%-18s %6u.%03u: %6u %5.1f%%\n", prog, (unsigned)(msec / 1000),
                        (unsigned)(msec % 1000), sequence, cpu * 100);
-                print_next_ns += print_interval_ns;
+                printNext_ns += printInterval_ns;
             }
         }
         r->getHistory()->remove_change(const_cast<CacheChange_t *>(cc));
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     printf("built %s %s\n", __DATE__, __TIME__);
 
     TestConfig::Config config;
-    if (!TestConfig::parse_args(argc, argv, config)) {
+    if (!TestConfig::parseArgs(argc, argv, config)) {
         TestConfig::usage(prog);
     }
 
@@ -107,56 +107,56 @@ int main(int argc, char *argv[])
     // zero time is next one-second boundary that is least 0.1 sec away
     zero_ns = clock_gettime_ns(CLOCK_MONOTONIC) + 1100000000; // 1.1 sec from now
     zero_ns = zero_ns - (zero_ns % 1000000000); // round down (shaves off up to 1 second)
-    print_interval_ns = config.print_s * 1000000000ULL;
-    print_next_ns = zero_ns;
+    printInterval_ns = config.print_s * 1000000000ULL;
+    printNext_ns = zero_ns;
 
     printf("create rtps participant\n");
-    RTPSParticipantAttributes part_attr;
-    part_attr.builtin.use_SIMPLE_RTPSParticipantDiscoveryProtocol = true;
-    part_attr.builtin.use_SIMPLE_EndpointDiscoveryProtocol = true;
-    part_attr.builtin.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
-    part_attr.builtin.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
-    part_attr.builtin.domainId = 80;
-    part_attr.builtin.leaseDuration = c_TimeInfinite;
-    part_attr.sendSocketBufferSize = 8712;
-    part_attr.listenSocketBufferSize = 17424;
-    part_attr.setName("test_participant");
-    RTPSParticipant *part = RTPSDomain::createParticipant(part_attr);
+    RTPSParticipantAttributes partAttr;
+    partAttr.builtin.use_SIMPLE_RTPSParticipantDiscoveryProtocol = true;
+    partAttr.builtin.use_SIMPLE_EndpointDiscoveryProtocol = true;
+    partAttr.builtin.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
+    partAttr.builtin.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
+    partAttr.builtin.domainId = 80;
+    partAttr.builtin.leaseDuration = c_TimeInfinite;
+    partAttr.sendSocketBufferSize = 8712;
+    partAttr.listenSocketBufferSize = 17424;
+    partAttr.setName("test_participant");
+    RTPSParticipant *part = RTPSDomain::createParticipant(partAttr);
     if (part == nullptr) {
         printf("error\n");
         exit(1);
     }
 
     printf("create rtps reader history\n");
-    HistoryAttributes hist_attr;
-    hist_attr.payloadMaxSize = sizeof(TopicData);
+    HistoryAttributes histAttr;
+    histAttr.payloadMaxSize = sizeof(TopicData);
     // XXX config.history
-    ReaderHistory *reader_hist = new ReaderHistory(hist_attr);
-    if (reader_hist == nullptr) {
+    ReaderHistory *readerHist = new ReaderHistory(histAttr);
+    if (readerHist == nullptr) {
         printf("error\n");
         exit(1);
     }
 
     printf("create rtps reader\n");
-    TestReaderListener reader_listener;
-    ReaderAttributes reader_attr;
-    reader_attr.times.heartbeatResponseDelay.seconds = 0;
-    reader_attr.times.heartbeatResponseDelay.fraction = 4294967 * 50; // ~50 millis;
-    reader_attr.endpoint.reliabilityKind = config.reliable ? RELIABLE : BEST_EFFORT;
+    TestReaderListener readerListener;
+    ReaderAttributes readerAttr;
+    readerAttr.times.heartbeatResponseDelay.seconds = 0;
+    readerAttr.times.heartbeatResponseDelay.fraction = 4294967 * 50; // ~50 millis;
+    readerAttr.endpoint.reliabilityKind = config.reliable ? RELIABLE : BEST_EFFORT;
     RTPSReader *reader =
-        RTPSDomain::createRTPSReader(part, reader_attr, reader_hist, &reader_listener);
+        RTPSDomain::createRTPSReader(part, readerAttr, readerHist, &readerListener);
     if (reader == nullptr) {
         printf("error\n");
         exit(1);
     }
 
     printf("register rtps reader\n");
-    TopicAttributes topic_attr;
-    topic_attr.topicKind = NO_KEY;
-    topic_attr.topicName = TopicData::topic_name;
-    topic_attr.topicDataType = TopicData::topic_type;
-    ReaderQos reader_qos;
-    if (!part->registerReader(reader, topic_attr, reader_qos)) {
+    TopicAttributes topicAttr;
+    topicAttr.topicKind = NO_KEY;
+    topicAttr.topicName = TopicData::topicName;
+    topicAttr.topicDataType = TopicData::topicType;
+    ReaderQos readerQos;
+    if (!part->registerReader(reader, topicAttr, readerQos)) {
         printf("error\n");
         exit(1);
     }

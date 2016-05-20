@@ -1,10 +1,11 @@
+#include <iostream>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "test_config.h"
 
-bool TestConfig::parse_args(int argc, char *argv[], Config &config)
+bool TestConfig::parseArgs(int argc, char *argv[], Config &config)
 {
     char *endptr;
     int c;
@@ -86,14 +87,14 @@ bool TestConfig::parse_args(int argc, char *argv[], Config &config)
 
 void TestConfig::usage(const char *name)
 {
-    printf("usage: %s [options]\n", name);
-    printf("       [-q b|r]         qos, best effort or reliable\n");
-    printf("       [-r count]       message rate, messages/sec\n");
-    printf("       [-n count]       messages to pub or sub\n");
-    printf("       [-h count]       history depth\n");
-    printf("       [-l duration]    lease duration, seconds\n");
-    printf("       [-a interval]    announce interval, seconds\n");
-    printf("       [-p interval]    print interval, seconds\n");
-    printf("       [-?]             print this\n");
+    std::cout << "usage: " << name << " [options]" << std::endl;
+    std::cout << "       [-q b|r]         qos, best effort or reliable" << std::endl;
+    std::cout << "       [-r count]       message rate, messages/sec" << std::endl;
+    std::cout << "       [-n count]       messages to pub or sub" << std::endl;
+    std::cout << "       [-h count]       history depth" << std::endl;
+    std::cout << "       [-l duration]    lease duration, seconds" << std::endl;
+    std::cout << "       [-a interval]    announce interval, seconds" << std::endl;
+    std::cout << "       [-p interval]    print interval, seconds" << std::endl;
+    std::cout << "       [-?]             print this" << std::endl;
     exit(1);
 }

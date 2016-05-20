@@ -32,7 +32,7 @@ class TestTopicDataType : public TopicDataType
 public:
     TestTopicDataType()
     {
-        setName(TopicData::topic_type);
+        setName(TopicData::topicType);
         m_typeSize = sizeof(TopicData);
         m_isGetKeyDefined = false;
     }
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     std::cout << "built " << __DATE__ << " " << __TIME__ << std::endl;
 
     TestConfig::Config config;
-    if (!TestConfig::parse_args(argc, argv, config)) {
+    if (!TestConfig::parseArgs(argc, argv, config)) {
         TestConfig::usage(prog);
     }
 
@@ -121,8 +121,8 @@ int main(int argc, char *argv[])
     std::cout << "create publisher" << std::endl;
     PublisherAttributes pubAttr;
     pubAttr.topic.topicKind = NO_KEY;
-    pubAttr.topic.topicName = TopicData::topic_name;
-    pubAttr.topic.topicDataType = TopicData::topic_type;
+    pubAttr.topic.topicName = TopicData::topicName;
+    pubAttr.topic.topicDataType = TopicData::topicType;
     pubAttr.topic.historyQos.kind = KEEP_LAST_HISTORY_QOS;
     pubAttr.topic.historyQos.depth = config.history;
     pubAttr.topic.resourceLimitsQos.max_samples = 2 * config.history;
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 
         if (pubNext >= printNext) {
             resources.sample();
-            double cpu = resources.cpu_load();
+            double cpu = resources.cpuLoad();
             std::ios::fmtflags f(std::cout.flags()); // save state
             std::cout << std::setw(18) << std::left << prog << std::right << " " << std::setw(10)
                       << std::fixed << std::setprecision(3) << toDouble(pubNext - timeZero) << ": "

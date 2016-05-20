@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     cout << "built " __DATE__ " " __TIME__ << endl;
 
     TestConfig::Config config;
-    if (!TestConfig::parse_args(argc, argv, config)) {
+    if (!TestConfig::parseArgs(argc, argv, config)) {
         TestConfig::usage(prog);
     }
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    commkit::Topic topic(TopicData::topic_name, TopicData::topic_type, sizeof(TopicData));
+    commkit::Topic topic(TopicData::topicName, TopicData::topicType, sizeof(TopicData));
 
     cout << "create publisher" << endl;
     auto pub = node.createPublisher(topic);
@@ -64,56 +64,56 @@ int main(int argc, char *argv[])
     }
     pub->onSubscriberConnected.connect(&onConnect);
     pub->onSubscriberDisconnected.connect(&onDisconnect);
-    commkit::PublicationOpts pub_opts;
-    pub_opts.reliable = config.reliable;
-    pub_opts.history = config.history;
-    if (!pub->init(pub_opts)) {
+    commkit::PublicationOpts pubOpts;
+    pubOpts.reliable = config.reliable;
+    pubOpts.history = config.history;
+    if (!pub->init(pubOpts)) {
         cerr << "error" << endl;
         exit(1);
     }
 
-    commkit::clock::time_point time_zero = commkit::clock::now();
+    commkit::clock::time_point timeZero = commkit::clock::now();
 
-    commkit::clock::time_point pub_next = time_zero;
-    commkit::clock::duration pub_interval =
+    commkit::clock::time_point pubNext = timeZero;
+    commkit::clock::duration pubInterval =
         commkit::clock::duration(std::chrono::nanoseconds(1000000000ull / config.rate));
 
-    commkit::clock::time_point print_next = time_zero;
-    commkit::clock::duration print_interval =
+    commkit::clock::time_point printNext = timeZero;
+    commkit::clock::duration printInterval =
         commkit::clock::duration(std::chrono::seconds(config.print_s));
 
     uint32_t sequence = 0;
 
     while (true) {
 
-        std::this_thread::sleep_until(pub_next);
+        std::this_thread::sleep_until(pubNext);
 
-        // time at this moment is intended to be pub_next;
+        // time at this moment is intended to be pubNext;
         // base calculations on that for consistency
 
-        uint8_t *pub_buf;
-        if (pub->reserve(&pub_buf, sizeof(TopicData))) {
-            TopicData topic_data;
-            memset(&topic_data, 0, sizeof(TopicData));
-            memcpy(pub_buf, &topic_data, sizeof(TopicData));
-            pub->publishReserved(pub_buf, sizeof(TopicData));
+        uint8_t *pubBuf;
+        if (pub->reserve(&pubBuf, sizeof(TopicData))) {
+            TopicData topicData;
+            memset(&topicData, 0, sizeof(TopicData));
+            memcpy(pubBuf, &topicData, sizeof(TopicData));
+            pub->publishReserved(pubBuf, sizeof(TopicData));
         } else {
             cout << "can't reserve publish buffer (TopicData)" << endl;
         }
 
-        if (pub_next >= print_next) {
+        if (pubNext >= printNext) {
             resources.sample();
-            double cpu = resources.cpu_load();
+            double cpu = resources.cpuLoad();
             std::ios::fmtflags f(cout.flags()); // save state
             cout << setw(18) << left << prog << right << " " << setw(10) << fixed << setprecision(3)
-                 << commkit::toDouble(pub_next - time_zero) << ": " << setw(6) << sequence << " "
+                 << commkit::toDouble(pubNext - timeZero) << ": " << setw(6) << sequence << " "
                  << setw(5) << fixed << setprecision(1) << cpu * 100.0 << "%" << endl;
             cout.flags(f); // restore state
-            print_next += print_interval;
+            printNext += printInterval;
         }
 
         sequence++;
-        pub_next += pub_interval;
+        pubNext += pubInterval;
     }
 
     return 0;

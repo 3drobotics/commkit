@@ -34,15 +34,15 @@ using namespace eprosima::fastrtps;
 
 static const char *prog = "test_sub_fastrtps";
 
-static test_clock::time_point timeZero;
-static test_clock::time_point printNext;
-static test_clock::duration printInterval;
+static TestClock::time_point timeZero;
+static TestClock::time_point printNext;
+static TestClock::duration printInterval;
 
 static volatile int msgCount = -1;
 
 static Resources resources;
 
-static SimpleStats<std::int64_t> latency_stats;
+static SimpleStats<std::int64_t> latencyStats;
 
 inline int64_t toInt64(const SequenceNumber_t &s)
 {
@@ -55,7 +55,7 @@ class TestTopicDataType : public TopicDataType
 public:
     TestTopicDataType()
     {
-        setName(TopicData::topic_type);
+        setName(TopicData::topicType);
         m_typeSize = sizeof(TopicData);
         m_isGetKeyDefined = false;
     }
@@ -108,7 +108,7 @@ public:
         SampleInfo_t sampleInfo;
         while (msgCount != 0 && sub->takeNextData((void *)&topicData, &sampleInfo)) {
 
-            test_clock::time_point now = test_clock::now();
+            TestClock::time_point now = TestClock::now();
 
             if (msgCount > 0)
                 msgCount--;
@@ -125,8 +125,8 @@ public:
             _lastSeq = sequence;
 
             // look for and print long latencies
-            test_clock::duration latency = now - toTimePoint(sampleInfo.sourceTimestamp);
-            latency_stats.accumulate(toInt64(latency));
+            TestClock::duration latency = now - toTimePoint(sampleInfo.sourceTimestamp);
+            latencyStats.accumulate(toInt64(latency));
             if (latency > std::chrono::milliseconds(100)) {
                 std::chrono::milliseconds msec =
                     std::chrono::duration_cast<std::chrono::milliseconds>(latency);
@@ -136,20 +136,20 @@ public:
 
             if (now >= printNext) {
                 resources.sample();
-                double cpu = resources.cpu_load();
+                double cpu = resources.cpuLoad();
                 std::ios::fmtflags f(std::cout.flags()); // save state
                 std::cout << std::setw(18) << std::left << prog << std::right << " "
                           << std::setw(10) << std::fixed << std::setprecision(3)
                           << toDouble(now - timeZero) << ": " << std::setw(6) << sequence << " "
                           // min max avg in milliseconds
                           << std::setw(6) << std::fixed << std::setprecision(2)
-                          << latency_stats.min() / 1000000.0 << " " << std::setw(6) << std::fixed
-                          << std::setprecision(2) << latency_stats.max() / 1000000.0 << " "
+                          << latencyStats.min() / 1000000.0 << " " << std::setw(6) << std::fixed
+                          << std::setprecision(2) << latencyStats.max() / 1000000.0 << " "
                           << std::setw(6) << std::fixed << std::setprecision(2)
-                          << latency_stats.average() / 1000000.0 << " " << std::setw(5)
+                          << latencyStats.average() / 1000000.0 << " " << std::setw(5)
                           << std::fixed << std::setprecision(1) << cpu * 100.0 << "%" << std::endl;
                 std::cout.flags(f); // restore state
-                latency_stats.reset();
+                latencyStats.reset();
                 printNext += printInterval;
             }
         }
@@ -174,14 +174,14 @@ int main(int argc, char *argv[])
     std::cout << "built " << __DATE__ << " " << __TIME__ << std::endl;
 
     TestConfig::Config config;
-    if (!TestConfig::parse_args(argc, argv, config)) {
+    if (!TestConfig::parseArgs(argc, argv, config)) {
         TestConfig::usage(prog);
     }
 
     eprosima::Log::setVerbosity(eprosima::VERB_ERROR);
 
-    printInterval = test_clock::duration(std::chrono::seconds(config.print_s));
-    timeZero = test_clock::now();
+    printInterval = TestClock::duration(std::chrono::seconds(config.print_s));
+    timeZero = TestClock::now();
     printNext = timeZero;
 
     msgCount = config.count;
@@ -207,8 +207,8 @@ int main(int argc, char *argv[])
     std::cout << "create subscriber" << std::endl;
     SubscriberAttributes subAttr;
     subAttr.topic.topicKind = NO_KEY;
-    subAttr.topic.topicName = TopicData::topic_name;
-    subAttr.topic.topicDataType = TopicData::topic_type;
+    subAttr.topic.topicName = TopicData::topicName;
+    subAttr.topic.topicDataType = TopicData::topicType;
     subAttr.times.heartbeatResponseDelay = toTime(0.050);
     subAttr.topic.historyQos.kind = KEEP_LAST_HISTORY_QOS;
     subAttr.topic.historyQos.depth = config.history;
@@ -225,10 +225,10 @@ int main(int argc, char *argv[])
     std::cout << "ready" << std::endl;
 
     int64_t lastSeqSave = INT64_MAX;
-    auto seqChange = test_clock::now();
+    auto seqChange = TestClock::now();
     while (msgCount != 0) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        auto now = test_clock::now();
+        auto now = TestClock::now();
         int64_t seq = testSubscriberListener.getLastSeq();
         if (lastSeqSave != seq) {
             lastSeqSave = seq;
