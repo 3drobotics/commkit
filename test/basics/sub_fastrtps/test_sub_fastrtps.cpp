@@ -146,8 +146,8 @@ public:
                           << latencyStats.min() / 1000000.0 << " " << std::setw(6) << std::fixed
                           << std::setprecision(2) << latencyStats.max() / 1000000.0 << " "
                           << std::setw(6) << std::fixed << std::setprecision(2)
-                          << latencyStats.average() / 1000000.0 << " " << std::setw(5)
-                          << std::fixed << std::setprecision(1) << cpu * 100.0 << "%" << std::endl;
+                          << latencyStats.average() / 1000000.0 << " " << std::setw(5) << std::fixed
+                          << std::setprecision(1) << cpu * 100.0 << "%" << std::endl;
                 std::cout.flags(f); // restore state
                 latencyStats.reset();
                 printNext += printInterval;

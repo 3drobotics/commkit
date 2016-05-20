@@ -27,7 +27,7 @@ public:
             _cpuLoad = 1.0;
         } else {
             _cpuLoad = toDouble((utime - _utimePrev) + (stime - _stimePrev)) /
-                        toDouble(mtime - _mtimePrev);
+                       toDouble(mtime - _mtimePrev);
         }
 
         _mtimePrev = mtime;
