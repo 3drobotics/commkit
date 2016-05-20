@@ -1,6 +1,10 @@
 
 find_library(LIBFASTRTPS fastrtps)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../shared
+)
 
 add_executable(sub_rtps
     test_sub_rtps.cpp

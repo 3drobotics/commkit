@@ -1,7 +1,11 @@
 
 # defined in gtest.cmake
 link_directories(${GTEST_LIB_DIR})
-include_directories(${GTEST_INCLUDE_DIR})
+
+include_directories(
+    ${GTEST_INCLUDE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../shared
+)
 
 find_package(Threads REQUIRED)
 
