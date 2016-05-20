@@ -91,9 +91,9 @@ public:
         }
     }
     // void onNewDataMessage(Subscriber *sub) not used
-    bool takeWithTimeout(TopicData &data, SampleInfo_t &info, test_clock::duration timeout)
+    bool takeWithTimeout(TopicData &data, SampleInfo_t &info, TestClock::duration timeout)
     {
-        test_clock::duration pollInterval = std::chrono::milliseconds(1);
+        TestClock::duration pollInterval = std::chrono::milliseconds(1);
         while (true) {
             if (subscriber == nullptr) {
                 return false; // subscriber deleted?
@@ -101,7 +101,7 @@ public:
                 int64_t seq = toInt64(info.sample_identity.sequence_number());
                 sequenceNumbersSeen.insert(seq);
                 return true;
-            } else if (timeout <= test_clock::duration(0)) {
+            } else if (timeout <= TestClock::duration(0)) {
                 return false; // timeout
             }
             std::this_thread::sleep_for(pollInterval);
@@ -264,13 +264,13 @@ TEST(Test, History)
 
                 // subTimeout should be long enough for pub to send another heartbeat
                 // and sub to request more messages
-                test_clock::duration subTimeout = std::chrono::milliseconds(200);
+                TestClock::duration subTimeout = std::chrono::milliseconds(200);
 
                 // evenly spaced, should not miss any
                 // cout << "smooth..." << endl;
                 subList.sequenceNumbersSeen.clear();
-                test_clock::duration msgInterval = std::chrono::milliseconds(1);
-                test_clock::time_point msgTime = test_clock::now();
+                TestClock::duration msgInterval = std::chrono::milliseconds(1);
+                TestClock::time_point msgTime = TestClock::now();
                 msgTime += msgInterval;
                 for (int i = 0; i < msgCount; i++) {
                     std::this_thread::sleep_until(msgTime);
