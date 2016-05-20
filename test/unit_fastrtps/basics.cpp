@@ -22,7 +22,7 @@ constexpr int socketBufSize = 8192;
 
 Resources resources;
 
-SimpleStats<std::int64_t> latency_stats;
+SimpleStats<std::int64_t> latencyStats;
 
 inline int64_t toInt64(const SequenceNumber_t &s)
 {
@@ -188,8 +188,8 @@ TEST(Test, History)
                 // create publisher
                 PublisherAttributes pubAttr;
                 pubAttr.topic.topicKind = NO_KEY;
-                pubAttr.topic.topicName = TopicData::topic_name;
-                pubAttr.topic.topicDataType = TopicData::topic_type;
+                pubAttr.topic.topicName = TopicData::topicName;
+                pubAttr.topic.topicDataType = TopicData::topicType;
                 pubAttr.topic.historyQos.kind = KEEP_LAST_HISTORY_QOS;
                 pubAttr.topic.historyQos.depth = pubHist;
                 // Publisher's max_samples has to be at least 2 more than its
@@ -229,8 +229,8 @@ TEST(Test, History)
                 // create subscriber
                 SubscriberAttributes subAttr;
                 subAttr.topic.topicKind = NO_KEY;
-                subAttr.topic.topicName = TopicData::topic_name;
-                subAttr.topic.topicDataType = TopicData::topic_type;
+                subAttr.topic.topicName = TopicData::topicName;
+                subAttr.topic.topicDataType = TopicData::topicType;
                 subAttr.topic.historyQos.kind = KEEP_LAST_HISTORY_QOS;
                 subAttr.topic.historyQos.depth = subHist;
                 subAttr.topic.resourceLimitsQos.max_samples = subHist + 2;

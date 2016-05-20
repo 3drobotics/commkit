@@ -1,8 +1,8 @@
 #pragma once
 
 struct TopicData {
-    static const char *topic_name;
-    static const char *topic_type;
+    static const char *topicName;
+    static const char *topicType;
     TopicData()
     {
         for (int i = 0; i < 4; i++)
@@ -16,5 +16,5 @@ struct TopicData {
     int32_t data[4];
 };
 
-const char *TopicData::topic_name = "TestTopic";
-const char *TopicData::topic_type = "TopicData";
+const char *TopicData::topicName = "TestTopic";
+const char *TopicData::topicType = "TopicData";

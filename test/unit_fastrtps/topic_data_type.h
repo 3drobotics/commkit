@@ -13,7 +13,7 @@ class TestTopicDataType : public TopicDataType
 public:
     TestTopicDataType()
     {
-        setName(TopicData::topic_type);
+        setName(TopicData::topicType);
         m_typeSize = sizeof(TopicData);
         m_isGetKeyDefined = false;
     }
